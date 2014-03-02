@@ -4,23 +4,40 @@
 
 "use strict";
 
+/**
+ * The "panel" portion of the Loop GUI.
+ */
+
 function LoopPanel() {
+  window.wrapperPort.onmessage = this.processMessage.bind(this);
+  this.sendMessage({operation: "init_done"});
 }
 
 LoopPanel.prototype = {
-  init: function() {
-    window.wrapperPort.onmessage = this.processMessage.bind(this);
-    this.sendMessage({operation: "init_done"});
-  },
-
-  processMessage: function(msg) {
-    console.log("Received message from chrome frame: " + msg.data);
-  },
-
+  /**
+   * Send a message to the privileged wrapper.
+   *
+   * @param msg  Object representing the message to send. Must
+   *             contain an "operation" attribute. Additional
+   *             attributes are optional, and evaluated based on
+   *             the operation.
+   *
+   */
   sendMessage: function(msg) {
     window.wrapperPort.postMessage(JSON.stringify(msg));
+  },
+
+  /**
+   * Handle a message received from the privileged wrapper.
+   *
+   * @param msg  JSON-serialized representation of the message. Must
+   *             contain an "operation" attribute. Additional
+   *             attributes are optional, and evaluated based on
+   *             the operation.
+   */
+  processMessage: function(msg) {
+    console.log("Received message from chrome frame: " + msg.data);
   }
 };
 
 this.loopPanel = new LoopPanel();
-this.loopPanel.init();

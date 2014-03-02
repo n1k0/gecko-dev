@@ -5,12 +5,12 @@
 
 <html>
   <head>
-    <title>Loop Parent</title>
+    <title>Loop Panel</title>
     <script type="text/javascript" src="wrapper.js"></script>
   </head>
-  <body onload="initWrapper('loop-content-template', 'loop-content-iframe');">
+  <body onload="this.loopWrapper = new LoopWrapper('loop-content-template', 'loop-content-iframe');">
     <iframe id="loop-content-iframe" sandbox="allow-scripts" src="about:blank"
-            height="100%" width="100%">
+            height="100%" width="100%" frameborder="0">
     </iframe>
 
     <!-- All of the elements of the following template will be loaded into the
