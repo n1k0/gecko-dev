@@ -1,6 +1,19 @@
 from marionette_test import MarionetteTestCase
+from by import By
 
 class TestSomething(MarionetteTestCase):
     def test_foo(self):
-        self.assertEqual(9, 3 * 3, '3 x 3 should be 9')
-        self.assertTrue(type(2) == int, '2 should be an integer')
+        
+        # this is browser chrome, kids, not the content window just yet
+        self.marionette.set_context("chrome")
+
+        self.marionette.find_element(By.ID, "social-status-button-browser")
+
+        # click the element
+
+        # switch to the frame
+
+        # set context to content
+        self.marionette.set_context("content")
+
+        # find content element
