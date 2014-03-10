@@ -1349,6 +1349,8 @@ pref("social.sidebar.open", true);
 pref("social.sidebar.unload_timeout_ms", 10000);
 
 pref("social.activeProviders", '{"chrome://browser/content/loop/": 1}');
+pref("social.enabled", true);
+
 pref("dom.identity.enabled", false);
 
 // Turn on the CSP 1.0 parser for Content Security Policy headers
