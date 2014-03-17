@@ -1,0 +1,2 @@
+component {ec2c3c15-a040-4122-8e1a-72e688efdd5b} LoopProtocolHandler.js
+contract @mozilla.org/network/protocol;1?name=loop {ec2c3c15-a040-4122-8e1a-72e688efdd5b}
