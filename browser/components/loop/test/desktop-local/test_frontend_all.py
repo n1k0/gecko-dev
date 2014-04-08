@@ -3,7 +3,6 @@ import threading
 import SimpleHTTPServer
 import SocketServer
 import BaseHTTPServer
-from ipdb import set_trace
 
 PORT = 2222
 SRCDIR_PATH = "browser/components/loop/test/desktop-local/"
@@ -30,7 +29,6 @@ class TestFrontendAll(MarionetteTestCase):
 
     def check_page(self, url):
         self.marionette.navigate(url)
-        set_trace()
         self.marionette.find_element("id", 'complete')
         fail_node = self.marionette.find_element("css selector", '.failures > em')
         if fail_node.text == "0":
