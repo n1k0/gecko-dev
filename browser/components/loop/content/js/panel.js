@@ -4,13 +4,11 @@
 
 /* global loop:true */
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-
 var loop = loop || {};
-loop.panel = (function(TB, mozl10n) {
+loop.panel = (function(mozl10n) {
   "use strict";
 
-  var baseServerUrl = Services.prefs.getCharPref("loop.server"),
+  var baseServerUrl = navigator.mozSocial.getCharPref("loop.server"),
       panelView,
       // aliasing translation function as __ for concision
       __ = mozl10n.get;
@@ -91,4 +89,4 @@ loop.panel = (function(TB, mozl10n) {
     init: init,
     PanelView: PanelView
   };
-})(_, document.mozL10n);
+})(document.webL10n);
