@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global loop, sinon */
+/*global loop, sinon */
 
 var expect = chai.expect;
 
@@ -79,7 +79,7 @@ describe("loop.panel", function() {
     describe("#onCallUrlReceived", function() {
       it("should update the text field with the call url", function() {
         var view = new loop.panel.PanelView();
-        view.render();
+        view.render()
 
         view.onCallUrlReceived("http://call.me/");
 
