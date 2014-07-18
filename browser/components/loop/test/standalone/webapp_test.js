@@ -140,6 +140,19 @@ describe("loop.webapp", function() {
         });
       });
 
+      describe("#expired", function() {
+        it("should load the CallUrlExpiredView view", function() {
+          router.expired();
+
+          sinon.assert.calledOnce(router.loadReactComponent);
+          sinon.assert.calledWith(router.loadReactComponent,
+            sinon.match(function(value) {
+              return React.addons.TestUtils.isComponentOfType(
+                value, loop.webapp.CallUrlExpiredView);
+            }));
+        });
+      });
+
       describe("#initiate", function() {
         it("should set the token on the conversation model", function() {
           router.initiate("fakeToken");

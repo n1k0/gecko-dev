@@ -35,11 +35,11 @@ loop.webapp = (function($, _, OT, webL10n) {
   /**
    * Expired call URL view.
    */
-  var CallUrlExpiredView = React.createClass({displayName: 'CallUrlExpiredView',
+  var CallUrlExpiredView = React.createClass({
     render: function() {
       return (
         // XXX proper UX/design should be implemented here (see bug 1000131)
-        React.DOM.div(null, __("call_url_no_longer_available"))
+        <div>{__("call_url_no_longer_available")}</div>
       );
     }
   });

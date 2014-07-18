@@ -142,18 +142,29 @@ describe("loop.shared.models", function() {
             sinon.assert.calledWith(conversation.setReady, fakeSessionData);
           });
 
-        it("should trigger a `session:error` on failure", function(done) {
-          requestCallInfoStub.callsArgWith(2,
-            new Error("failed: HTTP 400 Bad Request; fake"));
+        it("should trigger a `session:error` event on generic failure",
+          function(done) {
+            var err = new Error("HTTP 400 Bad Request; fake");
+            err.jsonErr = {code: 400, errno: 101};
+            requestCallInfoStub.callsArgWith(2, err);
 
-          conversation.on("session:error", function(err) {
-            expect(err.message).to.match(/failed: HTTP 400 Bad Request; fake/);
-            done();
-          }).initiate({
-            client: fakeClient,
-            outgoing: true
+            conversation.on("session:error", function(err) {
+              expect(err.message).to.match(/HTTP 400 Bad Request; fake/);
+              done();
+            }).initiate({ client: fakeClient, outgoing: true });
           });
-        });
+
+        it("should trigger a `session:expired` event on expired call url",
+          function(done) {
+            var err = new Error("HTTP 404 Not Found; fake");
+            err.jsonErr = {code: 404, errno: 105};
+            requestCallInfoStub.callsArgWith(2, err);
+
+            conversation.on("session:expired", function(err2) {
+              expect(err2).eql(err);
+              done();
+            }).initiate({ client: fakeClient, outgoing: true });
+          });
 
         it("should end the session on outgoing call timeout", function() {
           requestCallInfoStub.callsArgWith(2, null, fakeSessionData);

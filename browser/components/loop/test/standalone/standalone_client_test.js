@@ -16,13 +16,12 @@ describe("loop.StandaloneClient", function() {
       fakeToken;
 
   var fakeErrorRes = JSON.stringify({
-      status: "errors",
-      errors: [{
-        location: "url",
-        name: "token",
-        description: "invalid token"
-      }]
-    });
+    code: 401,
+    errno: 101,
+    error: "error",
+    message: "invalid token",
+    info: "error info"
+  });
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
@@ -91,12 +90,27 @@ describe("loop.StandaloneClient", function() {
       it("should send an error when the request fails", function() {
         client.requestCallInfo("fake", "audio", callback);
 
-        requests[0].respond(400, {"Content-Type": "application/json"},
+        requests[0].respond(401, {"Content-Type": "application/json"},
                             fakeErrorRes);
         sinon.assert.calledWithMatch(callback, sinon.match(function(err) {
-          return /400.*invalid token/.test(err.message);
+          return /HTTP 401 Unauthorized/.test(err.message);
         }));
       });
+
+      it("should attach the JSON response error object to passed error",
+        function() {
+          client.requestCallInfo("fake", "audio", callback);
+
+          requests[0].respond(401, {"Content-Type": "application/json"},
+                              fakeErrorRes);
+          sinon.assert.calledWithMatch(callback, sinon.match(function(err) {
+            var jsonErr = JSON.parse(fakeErrorRes);
+            // we can't compare deserialized objects, so check property values
+            return err.jsonErr &&
+                   err.jsonErr.errno === jsonErr.errno &&
+                   err.jsonErr.code === jsonErr.code;
+          }));
+        });
 
       it("should send an error if the data is not valid", function() {
         client.requestCallInfo("fake", "audio", callback);
