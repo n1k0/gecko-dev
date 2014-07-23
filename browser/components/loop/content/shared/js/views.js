@@ -353,6 +353,208 @@ loop.shared.views = (function(_, OT, l10n) {
   });
 
   /**
+   * Feedback outer layout.
+   */
+  var FeedbackLayout = React.createClass({displayName: 'FeedbackLayout',
+    propTypes: {
+      sendFeedback: React.PropTypes.func,
+      reset:        React.PropTypes.func
+    },
+
+    render: function() {
+      var backButton = React.DOM.div(null);
+      if (this.props.reset) {
+        backButton = (
+          React.DOM.button({className: "back", type: "button", onClick: this.props.reset}, 
+            "« ", __("feedback_back_button")
+          )
+        );
+      }
+      return (
+        React.DOM.div({className: "feedback"}, 
+          backButton, 
+          React.DOM.h3(null, this.props.title), 
+          this.props.children
+        )
+      );
+    }
+  });
+
+  /**
+   * Detailed feedback form.
+   */
+  var FeedbackForm = React.createClass({displayName: 'FeedbackForm',
+    propTypes: {
+      sendFeedback: React.PropTypes.func,
+      reset:        React.PropTypes.func
+    },
+
+    getInitialState: function() {
+      return {reason: "", custom: ""};
+    },
+
+    handleReasonChange: function(event) {
+      var reason = event.target.value;
+      if (reason === "other") {
+        this.setState({reason: reason});
+      } else {
+        // resets custom text field
+        this.setState({custom: ""});
+      }
+    },
+
+    handleCustomTextChange: function(event) {
+      this.setState({custom: event.target.value});
+    },
+
+    handleFormSubmit: function(event) {
+      event.preventDefault();
+      var reason = this.refs.reason.getDOMNode().value.trim();
+      var custom = this.refs.custom.getDOMNode().value.trim();
+      this.props.sendFeedback({
+        reason: reason,
+        custom: reason === "other" ? custom : ""
+      });
+    },
+
+    render: function() {
+      return (
+        FeedbackLayout({title: __("feedback_what_makes_you_sad"), 
+                        reset: this.props.reset}, 
+          React.DOM.form({onSubmit: this.handleFormSubmit}, 
+            React.DOM.label(null, 
+              React.DOM.input({type: "radio", ref: "reason", name: "reason", 
+                     value: "audio_quality", onChange: this.handleReasonChange}), 
+              __("feedback_reason_audio_quality")
+            ), 
+            React.DOM.label(null, 
+              React.DOM.input({type: "radio", ref: "reason", name: "reason", 
+                     value: "video_quality", onChange: this.handleReasonChange}), 
+              __("feedback_reason_video_quality")
+            ), 
+            React.DOM.label(null, 
+              React.DOM.input({type: "radio", ref: "reason", name: "reason", 
+                     value: "disconnected", onChange: this.handleReasonChange}), 
+              __("feedback_reason_was_disconnected")
+            ), 
+            React.DOM.label(null, 
+              React.DOM.input({type: "radio", ref: "reason", name: "reason", value: "confusing", 
+                     onChange: this.handleReasonChange}), 
+              __("feedback_reason_confusing")
+            ), 
+            React.DOM.label(null, 
+              React.DOM.input({type: "radio", ref: "reason", name: "reason", value: "other", 
+                     onChange: this.handleReasonChange}), 
+              __("feedback_reason_other")
+            ), 
+            React.DOM.p(null, React.DOM.input({type: "text", ref: "custom", name: "custom", 
+                      disabled: this.state.reason !== "other", 
+                      onChange: this.handleCustomTextChange, 
+                      value: this.state.custom})), 
+            React.DOM.button({type: "submit", className: "btn btn-success"}, 
+              __("feedback_submit_button")
+            )
+          )
+        )
+      );
+    }
+  });
+
+  /**
+   * Feedback received view.
+   */
+  var FeedbackReceived = React.createClass({displayName: 'FeedbackReceived',
+    getInitialState: function() {
+      return {countdown: 5};
+    },
+
+    componentDidMount: function() {
+      this._timer = setInterval(function() {
+        this.setState({countdown: this.state.countdown - 1});
+      }.bind(this), 1000);
+    },
+
+    render: function() {
+      if (this.state.countdown < 1) {
+        clearInterval(this._timer);
+        window.close();
+      }
+      return (
+        FeedbackLayout({title: __("feedback_thank_you_heading")}, 
+          React.DOM.p({className: "info"}, __("feedback_window_will_close_in", {
+            countdown: this.state.countdown
+          }))
+        )
+      );
+    }
+  });
+
+  /**
+   * Feedback view.
+   */
+  var FeedbackView = React.createClass({displayName: 'FeedbackView',
+    propTypes: {
+      feedbackApiClient: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+      return {step: this.props.step};
+    },
+
+    getInitialProps: function() {
+      return {step: "start"};
+    },
+
+    reset: function() {
+      this.setState(this.getInitialState());
+    },
+
+    handleHappyClick: function() {
+      this.setState({step: "finished"});
+    },
+
+    handleSadClick: function() {
+      this.setState({step: "form"});
+    },
+
+    sendFeedback: function(fields) {
+      this.props.feedbackApiClient.send(fields, this._onFeedbackSent);
+      // XXX we could possibly add a new step state value for pending submission
+    },
+
+    _onFeedbackSent: function(err) {
+      if (err) {
+        // XXX better end user error reporting, needs spec
+        alert("Unable to send user feedback");
+        console.error(err);
+      }
+      this.setState({step: "finished"});
+    },
+
+    render: function() {
+      switch(this.state.step) {
+        case "finished":
+          return FeedbackReceived(null);
+        case "form":
+          return FeedbackForm({feedbackApiClient: this.props.feedbackApiClient, 
+                               sendFeedback: this.sendFeedback, 
+                               reset: this.reset});
+        default:
+          return (
+            FeedbackLayout({title: __("feedback_call_experience_heading")}, 
+              React.DOM.div({className: "faces"}, 
+                React.DOM.button({className: "face face-happy", 
+                        onClick: this.handleHappyClick}), 
+                React.DOM.button({className: "face face-sad", 
+                        onClick: this.handleSadClick})
+              )
+            )
+          );
+      }
+    }
+  });
+
+  /**
    * Notification view.
    */
   var NotificationView = BaseView.extend({
@@ -518,6 +720,7 @@ loop.shared.views = (function(_, OT, l10n) {
     BaseView: BaseView,
     ConversationView: ConversationView,
     ConversationToolbar: ConversationToolbar,
+    FeedbackView: FeedbackView,
     MediaControlButton: MediaControlButton,
     NotificationListView: NotificationListView,
     NotificationView: NotificationView,
