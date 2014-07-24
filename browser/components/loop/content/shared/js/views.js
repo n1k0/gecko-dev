@@ -138,9 +138,11 @@ loop.shared.views = (function(_, OT, l10n) {
 
     render: function() {
       return (
+        /* jshint ignore:start */
         React.DOM.button( {className:this._getClasses(),
                 title:this._getTitle(),
                 onClick:this.handleClick})
+        /* jshint ignore:end */
       );
     }
   });
@@ -176,8 +178,9 @@ loop.shared.views = (function(_, OT, l10n) {
     },
 
     render: function() {
+      /* jshint ignore:start */
       return (
-        React.DOM.ul( {className:"controls"}, 
+        React.DOM.ul( {className:"conversation-toolbar"}, 
           React.DOM.li(null, React.DOM.button( {className:"btn btn-hangup",
                       onClick:this.handleClickHangup,
                       title:__("hangup_button_title")})),
@@ -189,6 +192,7 @@ loop.shared.views = (function(_, OT, l10n) {
                                   scope:"local", type:"audio"} ))
         )
       );
+      /* jshint ignore:end */
     }
   });
 
@@ -200,8 +204,8 @@ loop.shared.views = (function(_, OT, l10n) {
       model: React.PropTypes.object.isRequired
     },
 
-    // height set to "auto" to fix video layout on Google Chrome
-    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=991122
+    // height set to 100%" to fix video layout on Google Chrome
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1020445
     publisherConfig: {
       insertMode: "append",
       width: "100%",
@@ -329,6 +333,7 @@ loop.shared.views = (function(_, OT, l10n) {
     },
 
     render: function() {
+      /* jshint ignore:start */
       return (
         React.DOM.div( {className:"conversation"}, 
           ConversationToolbar( {video:this.state.video,
@@ -343,6 +348,7 @@ loop.shared.views = (function(_, OT, l10n) {
           )
         )
       );
+      /* jshint ignore:end */
     }
   });
 
