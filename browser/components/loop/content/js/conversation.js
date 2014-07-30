@@ -105,27 +105,27 @@ loop.conversation = (function(OT, mozL10n) {
         "visually-hidden": !this.state.showDeclineMenu
       });
       return (
-        React.DOM.div({className: conversationPanelClass}, 
-          React.DOM.h2(null, __("incoming_call")), 
-          React.DOM.div({className: "button-group incoming-call-action-group"}, 
-            React.DOM.div({className: "button-chevron-menu-group"}, 
-              React.DOM.div({className: "button-group-chevron"}, 
-                React.DOM.div({className: "button-group"}, 
-                  React.DOM.button({className: btnClassDecline, onClick: this._handleDecline}, 
+        React.DOM.div( {className:conversationPanelClass}, 
+          React.DOM.h2(null, __("incoming_call")),
+          React.DOM.div( {className:"button-group incoming-call-action-group"}, 
+            React.DOM.div( {className:"button-chevron-menu-group"}, 
+              React.DOM.div( {className:"button-group-chevron"}, 
+                React.DOM.div( {className:"button-group"}, 
+                  React.DOM.button( {className:btnClassDecline, onClick:this._handleDecline}, 
                     __("incoming_call_decline_button")
-                  ), 
-                  React.DOM.div({className: "btn-chevron", 
-                    onClick: this._toggleDeclineMenu}
+                  ),
+                  React.DOM.div( {className:"btn-chevron",
+                    onClick:this._toggleDeclineMenu}
                   )
-                ), 
-                React.DOM.ul({className: declineDropdownMenuClasses}, 
-                  React.DOM.li({className: "btn-block", onClick: this._handleDeclineBlock}, 
+                ),
+                React.DOM.ul( {className:declineDropdownMenuClasses}, 
+                  React.DOM.li( {className:"btn-block", onClick:this._handleDeclineBlock}, 
                     __("incoming_call_decline_and_block_button")
                   )
                 )
               )
-            ), 
-            React.DOM.button({className: btnClassAccept, onClick: this._handleAccept}, 
+            ),
+            React.DOM.button( {className:btnClassAccept, onClick:this._handleAccept}, 
               __("incoming_call_answer_button")
             )
           )
@@ -253,14 +253,12 @@ loop.conversation = (function(OT, mozL10n) {
      * Call has ended, display a feedback form.
      */
     feedback: function() {
-      // XXX pass in the feedback sender object
       this.loadReactComponent(sharedViews.FeedbackView({
-        // XXX for now we pass in a fake feeback API client (see bug 972992)
-        feedbackApiClient: {
-          send: function(fields, cb) {
-            cb();
-          }
-        }
+        feedbackApiClient: new loop.FeedbackAPIClient({
+          // XXX these prefs needs defaults!
+          baseURL: navigator.mozLoop.getLoopCharPref('feedback.baseUrl'),
+          product: navigator.mozLoop.getLoopCharPref('feedback.product')
+        })
       }));
     }
   });

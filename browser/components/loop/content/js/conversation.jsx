@@ -253,14 +253,12 @@ loop.conversation = (function(OT, mozL10n) {
      * Call has ended, display a feedback form.
      */
     feedback: function() {
-      // XXX pass in the feedback sender object
       this.loadReactComponent(sharedViews.FeedbackView({
-        // XXX for now we pass in a fake feeback API client (see bug 972992)
-        feedbackApiClient: {
-          send: function(fields, cb) {
-            cb();
-          }
-        }
+        feedbackApiClient: new loop.FeedbackAPIClient({
+          // XXX these prefs needs defaults!
+          baseURL: navigator.mozLoop.getLoopCharPref('feedback.baseUrl'),
+          product: navigator.mozLoop.getLoopCharPref('feedback.product')
+        })
       }));
     }
   });

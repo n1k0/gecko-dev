@@ -33,13 +33,13 @@
     return false;
   }
 
-  // local fakes
-  var fakeFeedbackApiClient = {
-    send: function(fields, cb) {
-      alert("Sent feedback data: " + JSON.stringify(fields));
-      cb();
-    }
-  };
+  // Feedback API client configured to send data to the stage input server,
+  // which is available at https://input.allizom.org
+  var stageFeedbackApiClient = new loop.FeedbackAPIClient({
+    baseUrl: "https://input.allizom.org/api/v1/feedback",
+    product: "Firefox" // XXX Update this to final product name when it's
+                       //     eventually supported by the input API
+  });
 
   var Example = React.createClass({
     render: function() {
@@ -125,7 +125,7 @@
 
           <Section name="FeedbackView">
             <Example summary="Default (useable demo)" dashed="true" style={{width: "280px"}}>
-              <FeedbackView feedbackApiClient={fakeFeedbackApiClient} />
+              <FeedbackView feedbackApiClient={stageFeedbackApiClient} />
             </Example>
             <Example summary="Detailed form" dashed="true" style={{width: "280px"}}>
               <FeedbackView step="form" />
