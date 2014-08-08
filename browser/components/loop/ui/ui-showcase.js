@@ -111,20 +111,42 @@
           ), 
 
           Section({name: "ConversationToolbar"}, 
-            Example({summary: "Default"}, 
-              ConversationToolbar({video: {enabled: true}, audio: {enabled: true}})
+            React.DOM.h3(null, "Desktop Conversation Window"), 
+            React.DOM.div({className: "conversation-window"}, 
+              Example({summary: "Default (260x265)", dashed: "true"}, 
+                ConversationToolbar({video: {enabled: true}, audio: {enabled: true}})
+              ), 
+              Example({summary: "Video muted"}, 
+                ConversationToolbar({video: {enabled: false}, audio: {enabled: true}})
+              ), 
+              Example({summary: "Audio muted"}, 
+                ConversationToolbar({video: {enabled: true}, audio: {enabled: false}})
+              )
             ), 
-            Example({summary: "Video muted"}, 
-              ConversationToolbar({video: {enabled: false}, audio: {enabled: true}})
-            ), 
-            Example({summary: "Audio muted"}, 
-              ConversationToolbar({video: {enabled: true}, audio: {enabled: false}})
+            React.DOM.h3(null, "Standalone"), 
+            React.DOM.div({className: "standalone"}, 
+              Example({summary: "Default"}, 
+                ConversationToolbar({video: {enabled: true}, audio: {enabled: true}})
+              ), 
+              Example({summary: "Video muted"}, 
+                ConversationToolbar({video: {enabled: false}, audio: {enabled: true}})
+              ), 
+              Example({summary: "Audio muted"}, 
+                ConversationToolbar({video: {enabled: true}, audio: {enabled: false}})
+              )
             )
           ), 
 
           Section({name: "ConversationView"}, 
-            Example({summary: "Default"}, 
-              ConversationView({video: {enabled: true}, audio: {enabled: true}})
+            Example({summary: "Desktop conversation window", dashed: "true", style: {width: "260px", height: "265px"}}, 
+              React.DOM.div({className: "conversation-window"}, 
+                ConversationView({video: {enabled: true}, audio: {enabled: true}})
+              )
+            ), 
+            Example({summary: "Standalone version"}, 
+              React.DOM.div({className: "standalone"}, 
+                ConversationView({video: {enabled: true}, audio: {enabled: true}})
+              )
             )
           ), 
 

@@ -2,22 +2,52 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Conversation window styles */
+/* Shared conversation window styles */
+
+.standalone .video-layout-wrapper {
+  background-color: #111;
+}
 
 .conversation {
   position: relative;
 }
 
+.standalone .conversation {
+  margin: 0px auto;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 .conversation-toolbar {
-  position: absolute;
+/*  position: absolute;*/
   z-index: 999; /* required to have it superimposed to the video element */
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, .70);
-  border: 1px solid #5a5a5a;
   list-style-type: none;
   margin: 0;
   padding: 0;
+}
+
+.conversation .conversation-toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+/* desktop version */
+.conversation-window .conversation-toolbar {
+  height: 32px;
+  background: rgba(0, 0, 0, .70);
+  border: 1px solid #5a5a5a;
+}
+
+/* standalone version */
+.standalone .conversation .conversation-toolbar {
+  bottom: 0;
+}
+
+.standalone .conversation-toolbar {
+  background: rgba(0, 0, 0, .30);
+  padding: 2em;
+  height: 79px;
 }
 
 .conversation-toolbar li {
@@ -26,16 +56,32 @@
                      chrome */
 }
 
+.conversation-window .conversation-toolbar li {
+  border-right: 1px solid #5a5a5a;
+}
+
+.standalone .conversation-toolbar li {
+  margin-right: 16px;
+}
+
 .conversation-toolbar .btn {
-  width: 40px;
   height: 30px;
   background: transparent;
   background-repeat: no-repeat;
-  background-position: 12px 8px;
   background-size: 14px 14px;
-  border-right: 1px solid #5a5a5a;
-  border-radius: 0;
   cursor: pointer;
+}
+
+.conversation-window .conversation-toolbar .btn {
+  width: 40px;
+  background-position: 12px 8px;
+  border-radius: 0;
+}
+
+.standalone .conversation-toolbar .btn {
+  width: 34px;
+  background-position: 9px 7px;
+  border-radius: 28px;
 }
 
 .conversation-toolbar .btn:hover {
@@ -45,13 +91,25 @@
 /* Hangup button */
 .conversation-toolbar .btn-hangup {
   background-color: #D74345;
-  background-image: url(../img/hangup-inverse-14x14.png);
 }
-.conversation-toolbar .btn-hangup:hover {
+
+.conversation-window .btn-hangup:hover,
+.standalone .conversation-toolbar .btn-hangup:hover {
   background-color: #C53436;
 }
+
+.standalone .conversation-toolbar .btn-hangup {
+  width: auto;
+  font-size: 12px;
+  border-radius: 2px;
+  padding: 0 20px;
+}
+
+.conversation-window .conversation-toolbar .btn-hangup {
+  background-image: url(../img/hangup-inverse-14x14.png);
+}
 @media (min-resolution: 2dppx) {
-  .conversation-toolbar .btn-hangup {
+  .conversation-window .conversation-toolbar .btn-hangup {
     background-image: url(../img/hangup-inverse-14x14@2x.png);
   }
 }
@@ -119,7 +177,6 @@
 .conversation .media.nested .remote_wrapper {
   display: inline-block;
   position: relative;
-  background: #0f0;
   width: 100%;
   padding-bottom: 75%; /* XXX forced 4:3 ratio, see bug 1020445 */
 }
@@ -144,6 +201,14 @@
   /* next two lines are workaround for lack of object-fit; see bug 1020445 */
   height: 22.5%;
   max-height: 105px;
+}
+
+.standalone .conversation .media.nested .local {
+  /* required to have it superimposed to the control toolbar */
+  z-index: 1001;
+  bottom: 13px;
+  right: 10px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Side by side video elements */

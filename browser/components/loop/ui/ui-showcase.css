@@ -52,3 +52,17 @@
   color: #666;
   font-style: italic;
 }
+
+/* Images as fake videos for conversation view */
+.conversation .media.nested .remote,
+.conversation .media.nested .local {
+  background-size: contain;
+}
+
+.conversation .media.nested .remote {
+  background-image: url("sample-img/video-screen-remote.png");
+}
+
+.conversation .media.nested .local {
+  background-image: url("sample-img/video-screen-local.png");
+}

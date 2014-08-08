@@ -181,9 +181,12 @@ loop.shared.views = (function(_, OT, l10n) {
       /* jshint ignore:start */
       return (
         <ul className="conversation-toolbar">
-          <li><button className="btn btn-hangup"
-                      onClick={this.handleClickHangup}
-                      title={l10n.get("hangup_button_title")}></button></li>
+          <li>
+            <button className="btn btn-hangup" onClick={this.handleClickHangup}
+                    title={l10n.get("hangup_button_title")}>
+              {l10n.get("hangup_button_caption")}
+            </button>
+          </li>
           <li><MediaControlButton action={this.handleToggleVideo}
                                   enabled={this.props.video.enabled}
                                   scope="local" type="video" /></li>
@@ -335,16 +338,18 @@ loop.shared.views = (function(_, OT, l10n) {
     render: function() {
       /* jshint ignore:start */
       return (
-        <div className="conversation">
-          <ConversationToolbar video={this.state.video}
-                               audio={this.state.audio}
-                               publishStream={this.publishStream}
-                               hangup={this.hangup} />
-          <div className="media nested">
-            <div className="video_wrapper remote_wrapper">
-              <div className="video_inner remote"></div>
+        <div className="video-layout-wrapper">
+          <div className="conversation">
+            <ConversationToolbar video={this.state.video}
+                                 audio={this.state.audio}
+                                 publishStream={this.publishStream}
+                                 hangup={this.hangup} />
+            <div className="media nested">
+              <div className="video_wrapper remote_wrapper">
+                <div className="video_inner remote"></div>
+              </div>
+              <div className="local"></div>
             </div>
-            <div className="local"></div>
           </div>
         </div>
       );
