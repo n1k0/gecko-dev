@@ -529,7 +529,7 @@ describe("loop.webapp", function() {
       });
 
       it("should start the conversation establishment process", function() {
-        var button = view.getDOMNode().querySelector(".start-audio-video-call");
+        var button = view.getDOMNode().querySelector(".btn-accept");
         React.addons.TestUtils.Simulate.click(button);
 
         sinon.assert.calledOnce(setupOutgoingCall);
@@ -537,7 +537,7 @@ describe("loop.webapp", function() {
       });
 
       it("should start the conversation establishment process", function() {
-        var button = view.getDOMNode().querySelector(".start-audio-only-call");
+        var button = view.getDOMNode().querySelector(".standalone-call-audio-menuitem");
         React.addons.TestUtils.Simulate.click(button);
 
         sinon.assert.calledOnce(setupOutgoingCall);
@@ -548,7 +548,7 @@ describe("loop.webapp", function() {
          function() {
            conversation.set("loopToken", "fake");
 
-           var button = view.getDOMNode().querySelector(".start-audio-video-call");
+           var button = view.getDOMNode().querySelector(".btn-accept");
            React.addons.TestUtils.Simulate.click(button);
 
            expect(button.disabled).to.eql(true);
@@ -558,7 +558,7 @@ describe("loop.webapp", function() {
          function() {
            conversation.set("loopToken", "fake");
 
-           var button = view.getDOMNode().querySelector(".start-audio-only-call");
+           var button = view.getDOMNode().querySelector(".standalone-call-audio-menuitem");
            React.addons.TestUtils.Simulate.click(button);
 
            expect(button.disabled).to.eql(true);
@@ -567,7 +567,7 @@ describe("loop.webapp", function() {
          it("should set selectedCallType to audio", function() {
            conversation.set("loopToken", "fake");
 
-           var button = view.getDOMNode().querySelector(".start-audio-only-call");
+           var button = view.getDOMNode().querySelector(".standalone-call-audio-menuitem");
            React.addons.TestUtils.Simulate.click(button);
 
            expect(conversation.get("selectedCallType")).to.eql("audio");
@@ -576,7 +576,7 @@ describe("loop.webapp", function() {
          it("should set selectedCallType to audio-video", function() {
            conversation.set("loopToken", "fake");
 
-           var button = view.getDOMNode().querySelector(".start-audio-video-call");
+           var button = view.getDOMNode().querySelector(".standalone-call-btn-video-icon");
            React.addons.TestUtils.Simulate.click(button);
 
            expect(conversation.get("selectedCallType")).to.eql("audio-video");

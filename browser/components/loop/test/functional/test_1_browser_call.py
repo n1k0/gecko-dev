@@ -39,7 +39,7 @@ class Test1BrowserCall(MarionetteTestCase):
             .until(lambda m: m.find_element(by, locator).is_displayed())
         return self.marionette.find_element(by, locator)
 
-    # XXX workaround for Marionette bug YYY
+    # XXX workaround for Marionette bug 1055309
     def wait_for_element_exists(self, by, locator, timeout=None):
         Wait(self.marionette, timeout,
              ignored_exceptions=[NoSuchElementException, StaleElementException]) \
