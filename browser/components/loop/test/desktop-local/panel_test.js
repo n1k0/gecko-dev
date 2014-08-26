@@ -196,6 +196,37 @@ describe("loop.panel", function() {
     });
   });
 
+  describe("loop.panel.SettingsDropdown", function() {
+    var view;
+
+    beforeEach(function() {
+      navigator.mozLoop.logInToFxA = sandbox.stub();
+      navigator.mozLoop.logOutFromFxA = sandbox.stub();
+
+      view = TestUtils.renderIntoDocument(loop.panel.SettingsDropdown());
+    });
+
+    describe("auth link", function() {
+      it("should sign in the user on click when unauthenticated", function() {
+        navigator.mozLoop.loggedInToFxA = false;
+
+        TestUtils.Simulate.click(
+          view.getDOMNode().querySelector(".dropdown-menu-item"));
+
+        sinon.assert.calledOnce(navigator.mozLoop.logInToFxA);
+      });
+
+      it("should sign out the user on click when authenticated", function() {
+        navigator.mozLoop.loggedInToFxA = true;
+
+        TestUtils.Simulate.click(
+          view.getDOMNode().querySelector(".dropdown-menu-item"));
+
+        sinon.assert.calledOnce(navigator.mozLoop.logOutFromFxA);
+      });
+    });
+  });
+
   describe("loop.panel.PanelView", function() {
     var fakeClient, callUrlData, view;
 

@@ -33,12 +33,27 @@
     return false;
   }
 
+  function noop(){}
+
   // Feedback API client configured to send data to the stage input server,
   // which is available at https://input.allizom.org
   var stageFeedbackApiClient = new loop.FeedbackAPIClient(
     "https://input.allizom.org/api/v1/feedback", {
       product: "Loop"
     });
+
+  // Fake server client
+  var fakeClient = {
+    requestCallUrl: function(){}
+  };
+
+  // Conversation model
+  var conversation = new loop.shared.models.ConversationModel({}, {
+    sdk: {}
+  });
+
+  // Fake notifier
+  var fakeNotifier = {};
 
   var Example = React.createClass({
     render: function() {
@@ -97,34 +112,47 @@
               <strong>Note:</strong> 332px wide.
             </p>
             <Example summary="Pending call url retrieval" dashed="true" style={{width: "332px"}}>
-              <PanelView />
+              <PanelView client={fakeClient} notifier={fakeNotifier} />
             </Example>
             <Example summary="Call URL retrieved" dashed="true" style={{width: "332px"}}>
-              <PanelView callUrl="http://invalid.example.url/" />
+              <PanelView client={fakeClient} notifier={fakeNotifier}
+                         callUrl="http://invalid.example.url/" />
             </Example>
           </Section>
 
           <Section name="IncomingCallView">
             <Example summary="Default" dashed="true" style={{width: "280px"}}>
-              <IncomingCallView />
+              <IncomingCallView model={conversation} />
             </Example>
           </Section>
 
           <Section name="ConversationToolbar">
             <Example summary="Default">
-              <ConversationToolbar video={{enabled: true}} audio={{enabled: true}} />
+              <ConversationToolbar video={{enabled: true}}
+                                   audio={{enabled: true}}
+                                   hangup={noop}
+                                   publishStream={noop} />
             </Example>
             <Example summary="Video muted">
-              <ConversationToolbar video={{enabled: false}} audio={{enabled: true}} />
+              <ConversationToolbar video={{enabled: false}}
+                                   audio={{enabled: true}}
+                                   hangup={noop}
+                                   publishStream={noop} />
             </Example>
             <Example summary="Audio muted">
-              <ConversationToolbar video={{enabled: true}} audio={{enabled: false}} />
+              <ConversationToolbar video={{enabled: true}}
+                                   audio={{enabled: false}}
+                                   hangup={noop}
+                                   publishStream={noop} />
             </Example>
           </Section>
 
           <Section name="ConversationView">
             <Example summary="Default">
-              <ConversationView video={{enabled: true}} audio={{enabled: true}} />
+              <ConversationView sdk={{}}
+                                model={conversation}
+                                video={{enabled: true}}
+                                audio={{enabled: true}} />
             </Example>
           </Section>
 
@@ -137,10 +165,10 @@
               <FeedbackView feedbackApiClient={stageFeedbackApiClient} />
             </Example>
             <Example summary="Detailed form" dashed="true" style={{width: "280px"}}>
-              <FeedbackView step="form" />
+              <FeedbackView feedbackApiClient={stageFeedbackApiClient} step="form" />
             </Example>
             <Example summary="Thank you!" dashed="true" style={{width: "280px"}}>
-              <FeedbackView step="finished" />
+              <FeedbackView feedbackApiClient={stageFeedbackApiClient} step="finished" />
             </Example>
           </Section>
 

@@ -22,14 +22,24 @@ loop.panel = (function(_, mozL10n) {
   var router;
 
   /**
-   * Availability drop down menu subview.
+   * Dropdown menu mixin.
+   * @type {Object}
    */
-  var AvailabilityDropdown = React.createClass({displayName: 'AvailabilityDropdown',
+  var DropdownMenuMixin = {
     getInitialState: function() {
-      return {
-        doNotDisturb: navigator.mozLoop.doNotDisturb,
-        showMenu: false
-      };
+      return {showMenu: false};
+    },
+
+    _onBodyClick: function() {
+      this.setState({showMenu: false});
+    },
+
+    componentDidMount: function() {
+      document.body.addEventListener("click", this._onBodyClick);
+    },
+
+    componentWillUnmount: function() {
+      document.body.removeEventListener("click", this._onBodyClick);
     },
 
     showDropdownMenu: function() {
@@ -38,6 +48,19 @@ loop.panel = (function(_, mozL10n) {
 
     hideDropdownMenu: function() {
       this.setState({showMenu: false});
+    }
+  };
+
+  /**
+   * Availability drop down menu subview.
+   */
+  var AvailabilityDropdown = React.createClass({displayName: 'AvailabilityDropdown',
+    mixins: [DropdownMenuMixin],
+
+    getInitialState: function() {
+      return {
+        doNotDisturb: navigator.mozLoop.doNotDisturb
+      };
     },
 
     // XXX target event can either be the li, the span or the i tag
@@ -69,7 +92,7 @@ loop.panel = (function(_, mozL10n) {
         'status-available': !this.state.doNotDisturb
       });
       var availabilityDropdown = cx({
-        'dnd-menu': true,
+        'dropdown-menu': true,
         'hide': !this.state.showMenu
       });
       var availabilityText = this.state.doNotDisturb ?
@@ -77,24 +100,22 @@ loop.panel = (function(_, mozL10n) {
                               __("display_name_available_status");
 
       return (
-        React.DOM.div({className: "footer component-spacer"}, 
-          React.DOM.div({className: "do-not-disturb"}, 
-            React.DOM.p({className: "dnd-status", onClick: this.showDropdownMenu}, 
-              React.DOM.span(null, availabilityText), 
-              React.DOM.i({className: availabilityStatus})
+        React.DOM.div({className: "dropdown"}, 
+          React.DOM.p({className: "dnd-status", onClick: this.showDropdownMenu}, 
+            React.DOM.span(null, availabilityText), 
+            React.DOM.i({className: availabilityStatus})
+          ), 
+          React.DOM.ul({className: availabilityDropdown, 
+              onMouseLeave: this.hideDropdownMenu}, 
+            React.DOM.li({onClick: this.changeAvailability("available"), 
+                className: "dropdown-menu-item dnd-make-available"}, 
+              React.DOM.i({className: "status status-available"}), 
+              React.DOM.span(null, __("display_name_available_status"))
             ), 
-            React.DOM.ul({className: availabilityDropdown, 
-                onMouseLeave: this.hideDropdownMenu}, 
-              React.DOM.li({onClick: this.changeAvailability("available"), 
-                  className: "dnd-menu-item dnd-make-available"}, 
-                React.DOM.i({className: "status status-available"}), 
-                React.DOM.span(null, __("display_name_available_status"))
-              ), 
-              React.DOM.li({onClick: this.changeAvailability("do-not-disturb"), 
-                  className: "dnd-menu-item dnd-make-unavailable"}, 
-                React.DOM.i({className: "status status-dnd"}), 
-                React.DOM.span(null, __("display_name_dnd_status"))
-              )
+            React.DOM.li({onClick: this.changeAvailability("do-not-disturb"), 
+                className: "dropdown-menu-item dnd-make-unavailable"}, 
+              React.DOM.i({className: "status status-dnd"}), 
+              React.DOM.span(null, __("display_name_dnd_status"))
             )
           )
         )
@@ -131,6 +152,43 @@ loop.panel = (function(_, mozL10n) {
     }
   });
 
+  /**
+   * Panel gear menu.
+   */
+  var SettingsDropdown = React.createClass({displayName: 'SettingsDropdown',
+    mixins: [DropdownMenuMixin],
+
+    handleClickAuthButton: function() {
+      if (navigator.mozLoop.loggedInToFxA) { // XXX to be implemented
+        navigator.mozLoop.logOutFromFxA();   // XXX to be implemented
+      } else {
+        navigator.mozLoop.logInToFxA();      // XXX to be implemented
+      }
+    },
+
+    render: function() {
+      var cx = React.addons.classSet;
+      return (
+        React.DOM.div({className: "settings-menu dropdown"}, 
+          React.DOM.a({className: "btn btn-settings", onClick: this.showDropdownMenu, 
+             title: __("settings_menu_button_tooltip")}), 
+          React.DOM.ul({className: cx({"dropdown-menu": true, hide: !this.state.showMenu}), 
+              onMouseLeave: this.hideDropdownMenu}, 
+            React.DOM.li({onClick: this.handleClickAuthButton, className: "dropdown-menu-item"}, 
+              React.DOM.i({className: cx({"icon-signin": !navigator.mozLoop.loggedInToFxA,
+                                "icon-signout": navigator.mozLoop.loggedInToFxA})}), 
+              React.DOM.span(null, this.props.signedIn ? __("settings_menu_item_signout") :
+                                           __("settings_menu_item_signin"))
+            )
+          )
+        )
+      );
+    }
+  });
+
+  /**
+   * Panel layout.
+   */
   var PanelLayout = React.createClass({displayName: 'PanelLayout',
     propTypes: {
       summary: React.PropTypes.string.isRequired
@@ -275,7 +333,10 @@ loop.panel = (function(_, mozL10n) {
                          notifier: this.props.notifier, 
                          callUrl: this.props.callUrl}), 
           ToSView(null), 
-          AvailabilityDropdown(null)
+          React.DOM.div({className: "footer component-spacer"}, 
+            AvailabilityDropdown(null), 
+            SettingsDropdown(null)
+          )
         )
       );
     }
@@ -373,6 +434,7 @@ loop.panel = (function(_, mozL10n) {
     CallUrlResult: CallUrlResult,
     PanelView: PanelView,
     PanelRouter: PanelRouter,
+    SettingsDropdown: SettingsDropdown,
     ToSView: ToSView
   };
 })(_, document.mozL10n);

@@ -22,14 +22,24 @@ loop.panel = (function(_, mozL10n) {
   var router;
 
   /**
-   * Availability drop down menu subview.
+   * Dropdown menu mixin.
+   * @type {Object}
    */
-  var AvailabilityDropdown = React.createClass({
+  var DropdownMenuMixin = {
     getInitialState: function() {
-      return {
-        doNotDisturb: navigator.mozLoop.doNotDisturb,
-        showMenu: false
-      };
+      return {showMenu: false};
+    },
+
+    _onBodyClick: function() {
+      this.setState({showMenu: false});
+    },
+
+    componentDidMount: function() {
+      document.body.addEventListener("click", this._onBodyClick);
+    },
+
+    componentWillUnmount: function() {
+      document.body.removeEventListener("click", this._onBodyClick);
     },
 
     showDropdownMenu: function() {
@@ -38,6 +48,19 @@ loop.panel = (function(_, mozL10n) {
 
     hideDropdownMenu: function() {
       this.setState({showMenu: false});
+    }
+  };
+
+  /**
+   * Availability drop down menu subview.
+   */
+  var AvailabilityDropdown = React.createClass({
+    mixins: [DropdownMenuMixin],
+
+    getInitialState: function() {
+      return {
+        doNotDisturb: navigator.mozLoop.doNotDisturb
+      };
     },
 
     // XXX target event can either be the li, the span or the i tag
@@ -69,7 +92,7 @@ loop.panel = (function(_, mozL10n) {
         'status-available': !this.state.doNotDisturb
       });
       var availabilityDropdown = cx({
-        'dnd-menu': true,
+        'dropdown-menu': true,
         'hide': !this.state.showMenu
       });
       var availabilityText = this.state.doNotDisturb ?
@@ -77,26 +100,24 @@ loop.panel = (function(_, mozL10n) {
                               __("display_name_available_status");
 
       return (
-        <div className="footer component-spacer">
-          <div className="do-not-disturb">
-            <p className="dnd-status" onClick={this.showDropdownMenu}>
-              <span>{availabilityText}</span>
-              <i className={availabilityStatus}></i>
-            </p>
-            <ul className={availabilityDropdown}
-                onMouseLeave={this.hideDropdownMenu}>
-              <li onClick={this.changeAvailability("available")}
-                  className="dnd-menu-item dnd-make-available">
-                <i className="status status-available"></i>
-                <span>{__("display_name_available_status")}</span>
-              </li>
-              <li onClick={this.changeAvailability("do-not-disturb")}
-                  className="dnd-menu-item dnd-make-unavailable">
-                <i className="status status-dnd"></i>
-                <span>{__("display_name_dnd_status")}</span>
-              </li>
-            </ul>
-          </div>
+        <div className="dropdown">
+          <p className="dnd-status" onClick={this.showDropdownMenu}>
+            <span>{availabilityText}</span>
+            <i className={availabilityStatus}></i>
+          </p>
+          <ul className={availabilityDropdown}
+              onMouseLeave={this.hideDropdownMenu}>
+            <li onClick={this.changeAvailability("available")}
+                className="dropdown-menu-item dnd-make-available">
+              <i className="status status-available"></i>
+              <span>{__("display_name_available_status")}</span>
+            </li>
+            <li onClick={this.changeAvailability("do-not-disturb")}
+                className="dropdown-menu-item dnd-make-unavailable">
+              <i className="status status-dnd"></i>
+              <span>{__("display_name_dnd_status")}</span>
+            </li>
+          </ul>
         </div>
       );
     }
@@ -131,6 +152,43 @@ loop.panel = (function(_, mozL10n) {
     }
   });
 
+  /**
+   * Panel gear menu.
+   */
+  var SettingsDropdown = React.createClass({
+    mixins: [DropdownMenuMixin],
+
+    handleClickAuthButton: function() {
+      if (navigator.mozLoop.loggedInToFxA) { // XXX to be implemented
+        navigator.mozLoop.logOutFromFxA();   // XXX to be implemented
+      } else {
+        navigator.mozLoop.logInToFxA();      // XXX to be implemented
+      }
+    },
+
+    render: function() {
+      var cx = React.addons.classSet;
+      return (
+        <div className="settings-menu dropdown">
+          <a className="btn btn-settings" onClick={this.showDropdownMenu}
+             title={__("settings_menu_button_tooltip")} />
+          <ul className={cx({"dropdown-menu": true, hide: !this.state.showMenu})}
+              onMouseLeave={this.hideDropdownMenu}>
+            <li onClick={this.handleClickAuthButton} className="dropdown-menu-item">
+              <i className={cx({"icon-signin": !navigator.mozLoop.loggedInToFxA,
+                                "icon-signout": navigator.mozLoop.loggedInToFxA})}></i>
+              <span>{this.props.signedIn ? __("settings_menu_item_signout") :
+                                           __("settings_menu_item_signin")}</span>
+            </li>
+          </ul>
+        </div>
+      );
+    }
+  });
+
+  /**
+   * Panel layout.
+   */
   var PanelLayout = React.createClass({
     propTypes: {
       summary: React.PropTypes.string.isRequired
@@ -275,7 +333,10 @@ loop.panel = (function(_, mozL10n) {
                          notifier={this.props.notifier}
                          callUrl={this.props.callUrl} />
           <ToSView />
-          <AvailabilityDropdown />
+          <div className="footer component-spacer">
+            <AvailabilityDropdown />
+            <SettingsDropdown />
+          </div>
         </div>
       );
     }
@@ -373,6 +434,7 @@ loop.panel = (function(_, mozL10n) {
     CallUrlResult: CallUrlResult,
     PanelView: PanelView,
     PanelRouter: PanelRouter,
+    SettingsDropdown: SettingsDropdown,
     ToSView: ToSView
   };
 })(_, document.mozL10n);

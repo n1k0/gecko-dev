@@ -105,6 +105,39 @@
   margin-bottom: 0;
 }
 
+/* Dropdown menu (shared styles) */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: -35px;
+  left: 10px;
+  background: #fdfdfd;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  list-style: none;
+  padding: 5px;
+  border-radius: 2px;
+}
+
+.dropdown-menu-item {
+  text-align: left;
+  margin: .3em 0;
+  padding: .2em .5em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-size: 1em;
+  white-space: nowrap;
+}
+
+.dropdown-menu-item:hover {
+  border: 1px solid #ccc;
+  background: #eee;
+}
+
 /* DnD menu */
 
 .dnd-status {
@@ -118,37 +151,6 @@
 .dnd-status:hover {
   border: 1px solid #DDD;
   background: #F1F1F1;
-}
-
-.do-not-disturb {
-  position: relative;
-}
-
-.dnd-menu {
-  position: absolute;
-  top: -35px;
-  left: 10px;
-  background: #fdfdfd;
-  box-shadow: 0 1px 3px rgba(0,0,0,.3);
-  list-style: none;
-  padding: 5px;
-  border-radius: 2px;
-}
-
-.dnd-menu-item {
-  text-align: left;
-  margin: .3em 0;
-  padding: .2em .5em;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-radius: 2px;
-  font-size: 1em;
-  white-space: nowrap;
-}
-
-.dnd-menu-item:hover {
-  border: 1px solid #ccc;
-  background: #eee;
 }
 
 /* Status badges -- Available/Unavailable */
@@ -167,6 +169,30 @@
 
 .status-dnd {
   border: 1px solid #888;
+}
+
+/* Settings (gear) menu */
+
+.btn-settings {
+  background: transparent url(../img/svg/glyph-settings-16x16.svg) no-repeat center center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  opacity: .6;
+}
+
+.footer .btn-settings {
+  margin-top: 4px; /* used to align the gear icon with the availability dropdown menu inner text */
+}
+
+.settings-menu .dropdown-menu {
+  /* The panel can't have dropdown menu overflowing its iframe boudaries;
+     let's anchor it from the bottom-right, while resetting the top & left values
+     set by .dropdown-menu */
+  top: auto;
+  left: auto;
+  bottom: -18px;
+  right: 14px;
 }
 
 /* Terms of Service */
@@ -188,13 +214,16 @@
 /* Footer */
 
 .footer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-content: stretch;
+  align-items: flex-start;
   font-size: 1em;
   border-top: 1px solid #D1D1D1;
   background: #EAEAEA;
   color: #7F7F7F;
-  display: flex;
   align-items: center;
   margin-top: auto;
-  flex-direction: row;
 }
-
