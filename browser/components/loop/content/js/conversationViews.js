@@ -13,6 +13,7 @@ loop.conversationViews = (function(mozL10n) {
   var CALL_TYPES = loop.shared.utils.CALL_TYPES;
   var sharedActions = loop.shared.actions;
   var sharedViews = loop.shared.views;
+  var sharedMixins = loop.shared.mixins;
 
   /**
    * Displays information about the call

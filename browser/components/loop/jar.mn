@@ -78,7 +78,9 @@ browser.jar:
   content/browser/loop/shared/libs/backbone-1.1.2.js  (content/shared/libs/backbone-1.1.2.js)
 
   # Shared sounds
-  content/browser/loop/shared/sounds/Firefox-Long.ogg (content/shared/sounds/Firefox-Long.ogg)
+  content/browser/loop/shared/sounds/Firefox-Long.ogg           (content/shared/sounds/Firefox-Long.ogg)
+  content/browser/loop/shared/sounds/call-progress-connect.ogg  (content/shared/sounds/call-progress-connect.ogg)
+  content/browser/loop/shared/sounds/call-progress-ringback.ogg (content/shared/sounds/call-progress-ringback.ogg)
 
   # Partner SDK assets
   content/browser/loop/libs/sdk.js                                                    (content/shared/libs/sdk.js)

@@ -13,9 +13,11 @@ describe("loop.webapp", function() {
   var sharedModels = loop.shared.models,
       sharedViews = loop.shared.views,
       sharedUtils = loop.shared.utils,
+      sharedMixins = loop.shared.mixins,
       sandbox,
       notifications,
-      feedbackApiClient;
+      feedbackApiClient,
+      playSound;
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
@@ -23,10 +25,13 @@ describe("loop.webapp", function() {
     feedbackApiClient = new loop.FeedbackAPIClient("http://invalid", {
       product: "Loop"
     });
+
+    playSound = sandbox.stub(sharedMixins.AudioMixin, "playSound");
   });
 
   afterEach(function() {
     sandbox.restore();
+    sharedMixins.setRootObject(window);
   });
 
   describe("#init", function() {
@@ -349,6 +354,13 @@ describe("loop.webapp", function() {
           sinon.assert.calledOnce(notifications.warnL10n);
           sinon.assert.calledWithExactly(notifications.warnL10n,
                                          "network_disconnected");
+        });
+
+        it("should play the call-disconnected sound", function() {
+          conversation.trigger("session:network-disconnected");
+
+          sinon.assert.calledOnce(playSound);
+          sinon.assert.calledWithExactly(playSound, "call-disconnected");
         });
       });
 

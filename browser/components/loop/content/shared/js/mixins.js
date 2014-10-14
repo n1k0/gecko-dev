@@ -22,7 +22,7 @@ loop.shared.mixins = (function() {
    * @param {Object}
    */
   function setRootObject(obj) {
-    console.info("loop.shared.mixins: rootObject set to " + obj);
+    console.info("loop.shared.mixins: rootObject set to", obj);
     rootObject = obj;
   }
 
@@ -97,7 +97,136 @@ loop.shared.mixins = (function() {
     }
   };
 
+  /**
+   * Audio mixin. , ensuring it is stopped
+   * when the component is unmounted.
+   */
+  var AudioMixin = {
+    /**
+     * List of available sounds.
+     * @type {Array}
+     */
+    availableSoundNames: [
+      "Firefox-Long",
+      "call-connected",
+      "call-disconnected",
+      "call-failed",
+      "call-progress-connect",
+      "call-progress-ringback"
+    ],
+
+    /**
+     * Hash of loaded audio elements.
+     * @type {Object}
+     */
+    localSounds: {},
+
+    /**
+     * Checks if current environment is Loop desktop (false means standalone).
+     *
+     * @return {Boolean}
+     */
+    _isLoopDesktop: function() {
+      // XXX is this enough?
+      return typeof rootObject.navigator.mozLoop === "object";
+    },
+
+    /**
+     * Preloads all the available sounds.
+     */
+    componentWillMount: function() {
+      if (!this._isLoopDesktop()) {
+        this.localSounds = this.availableSoundNames.reduce(function(sounds, name) {
+          sounds[name] = new rootObject.Audio("shared/sounds/" + name + ".ogg");
+          return sounds;
+        }, {});
+      }
+    },
+
+    /**
+     * Ensures audio is stopped when the component is unmounted.
+     */
+    componentWillUnmount: function() {
+      this.stopAllSounds();
+
+      if (!this._isLoopDesktop()) {
+        for (var name in this.localSounds) {
+          delete this.localSounds[name];
+        }
+      }
+    },
+
+    /**
+     * Retrieves an Audio instance for that name. Standalone only.
+     *
+     * @param  {String} name
+     * @return {Audio}
+     */
+    _getLocalSound: function(name) {
+      if (this._isLoopDesktop()) {
+        throw new Error("Can't use local sound files from Loop desktop.");
+      }
+
+      if (!(name in this.localSounds)) {
+        console.error("Sound " + name + " doesn't exist.");
+        return;
+      }
+
+      return this.localSounds[name];
+    },
+
+    /**
+     * Starts playing an audio file, stopping any audio that is already in
+     * progress.
+     *
+     * @param {String} name The sound name to play.
+     */
+    playSound: function(name) {
+      this.stopAllSounds();
+
+      if (this._isLoopDesktop()) {
+        // XXX navigator.mozLoop.playSound(name)
+        return;
+      }
+
+      var sound = this._getLocalSound(name);
+      if (sound) {
+        sound.play();
+      }
+    },
+
+    /**
+     * Stops playing an audio file.
+     *
+     * @param {String} name The sound name to play (see availableSoundNames).
+     */
+    stopSound: function(name) {
+      if (this._isLoopDesktop()) {
+        // XXX navigator.mozLoop.stopSound(name)
+        return;
+      }
+
+      var sound = this._getLocalSound(name);
+      if (sound) {
+        sound.pause();
+        // For some reason, the sound object might have been made unavailable at
+        // this point, triggering an InvalidStateError.
+        try {
+          sound.currentTime = 0;
+        } catch (e){}
+      }
+    },
+
+    /**
+     * Stops all sounds.
+     */
+    stopAllSounds: function() {
+      this.availableSoundNames.forEach(this.stopSound, this);
+    }
+  };
+
   return {
+    AudioMixin: AudioMixin,
     setRootObject: setRootObject,
     DropdownMenuMixin: DropdownMenuMixin,
     DocumentVisibilityMixin: DocumentVisibilityMixin

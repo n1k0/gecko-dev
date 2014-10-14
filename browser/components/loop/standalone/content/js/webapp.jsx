@@ -258,6 +258,8 @@ loop.webapp = (function($, _, OT, mozL10n) {
   });
 
   var PendingConversationView = React.createClass({
+    mixins: [sharedMixins.AudioMixin],
+
     getInitialState: function() {
       return {
         callState: this.props.callState || "connecting"
@@ -272,9 +274,15 @@ loop.webapp = (function($, _, OT, mozL10n) {
     componentDidMount: function() {
       this.props.websocket.listenTo(this.props.websocket, "progress:alerting",
                                     this._handleRingingProgress);
+      this.playSound("call-progress-connect");
+    },
+
+    shouldComponentUpdate: function(nextProps, nextState) {
+      return nextState.callState !== this.state.callState;
     },
 
     _handleRingingProgress: function() {
+      this.playSound("call-progress-ringback");
       this.setState({callState: "ringing"});
     },
 
@@ -575,6 +583,8 @@ loop.webapp = (function($, _, OT, mozL10n) {
    * At the moment, it does more than that, these parts need refactoring out.
    */
   var OutgoingConversationView = React.createClass({
+    mixins: [sharedMixins.AudioMixin],
+
     propTypes: {
       client: React.PropTypes.instanceOf(loop.StandaloneClient).isRequired,
       conversation: React.PropTypes.oneOfType([
@@ -635,6 +645,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
           );
         }
         case "failure": {
+          this.playSound("call-failed");
           return (
             <FailedConversationView
               conversation={this.props.conversation}
@@ -647,9 +658,11 @@ loop.webapp = (function($, _, OT, mozL10n) {
           return <PendingConversationView websocket={this._websocket} />;
         }
         case "connected": {
-          document.title = mozL10n.get("standalone_title_with_status",
-                                       {clientShortname: mozL10n.get("clientShortname2"),
-                                        currentStatus: mozL10n.get("status_in_conversation")});
+          document.title = mozL10n.get("standalone_title_with_status", {
+            clientShortname: mozL10n.get("clientShortname2"),
+            currentStatus:   mozL10n.get("status_in_conversation")
+          });
+          this.playSound("call-connected");
           return (
             <sharedViews.ConversationView
               initiate={true}
@@ -706,6 +719,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
      */
     _onNetworkDisconnected: function() {
       this.props.notifications.warnL10n("network_disconnected");
+      this.playSound("call-disconnected");
       this.setState({callStatus: "end"});
     },
 
@@ -893,7 +907,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
       baseServerUrl: loop.config.serverUrl
     });
     var notifications = new sharedModels.NotificationCollection();
-    var conversation
+    var conversation;
     if (helper.isFirefoxOS(navigator.userAgent)) {
       conversation = new FxOSConversationModel();
     } else {
