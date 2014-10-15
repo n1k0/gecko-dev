@@ -38,7 +38,8 @@ describe("loop.store.ConversationStore", function () {
 
     dispatcher = new loop.Dispatcher();
     client = {
-      setupOutgoingCall: sinon.stub()
+      setupOutgoingCall: sinon.stub(),
+      requestCallUrl: sinon.stub()
     };
     sdkDriver = {
       connectSession: sinon.stub(),
@@ -564,6 +565,32 @@ describe("loop.store.ConversationStore", function () {
 
       expect(store.get("videoMuted")).eql(true);
     });
+  });
+
+  describe("#fetchEmailLink", function() {
+    beforeEach(function() {
+      store.set({callId: "fakeCallId"});
+    });
+
+    it("should request a new call url to the server", function() {
+      dispatcher.dispatch(new sharedActions.FetchEmailLink());
+
+      sinon.assert.calledOnce(client.requestCallUrl);
+      sinon.assert.calledWith(client.requestCallUrl, store.get("callId"));
+    });
+
+    it("should update the emailLink attribute when the new call url is received",
+      function() {
+        client.requestCallUrl = function(callId, cb) {
+          cb(null, {callUrl: "http://fake.invalid/"});
+        };
+        dispatcher.dispatch(new sharedActions.FetchEmailLink());
+
+        expect(store.get("emailLink")).eql("http://fake.invalid/");
+      });
+
+    // XXX bug 1048162 Part 2 + needs UX
+    it.skip("should trigger an error in case of failure");
   });
 
   describe("Events", function() {

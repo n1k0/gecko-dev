@@ -126,7 +126,8 @@ loop.store.ConversationStore = (function() {
         "cancelCall",
         "retryCall",
         "mediaConnected",
-        "setMute"
+        "setMute",
+        "fetchEmailLink"
       ]);
     },
 
@@ -301,6 +302,22 @@ loop.store.ConversationStore = (function() {
     setMute: function(actionData) {
       var muteType = actionData.type + "Muted";
       this.set(muteType, !actionData.enabled);
+    },
+
+    /**
+     * Fetches a new call URL intended to be sent over email when a contact
+     * can't be reached.
+     */
+    fetchEmailLink: function() {
+      var callId = this.get("callId") || "";
+      this.client.requestCallUrl(callId, function(err, callUrlData) {
+        if (err) {
+          // XXX better error reporting in the UI
+          console.error(err);
+          return;
+        }
+        this.set("emailLink", callUrlData.callUrl);
+      }.bind(this));
     },
 
     /**

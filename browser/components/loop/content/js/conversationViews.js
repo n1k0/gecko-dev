@@ -12,7 +12,19 @@ loop.conversationViews = (function(mozL10n) {
   var CALL_STATES = loop.store.CALL_STATES;
   var CALL_TYPES = loop.shared.utils.CALL_TYPES;
   var sharedActions = loop.shared.actions;
+  var sharedUtils = loop.shared.utils;
   var sharedViews = loop.shared.views;
+
+  // This duplicates a similar function in contacts.jsx that isn't used in the
+  // conversation window. If we get too many of these, we might want to consider
+  // finding a logical place for them to be shared.
+  function _getPreferredEmail(contact) {
+    // A contact may not contain email addresses, but only a phone number.
+    if (!contact.email || contact.email.length === 0) {
+      return { value: "" };
+    }
+    return contact.email.find(e => e.pref) || contact.email[0];
+  }
 
   /**
    * Displays information about the call
@@ -93,17 +105,6 @@ loop.conversationViews = (function(mozL10n) {
       contact: React.PropTypes.object
     },
 
-    // This duplicates a similar function in contacts.jsx that isn't used in the
-    // conversation window. If we get too many of these, we might want to consider
-    // finding a logical place for them to be shared.
-    _getPreferredEmail: function(contact) {
-      // A contact may not contain email addresses, but only a phone number.
-      if (!contact.email || contact.email.length == 0) {
-        return { value: "" };
-      }
-      return contact.email.find(e => e.pref) || contact.email[0];
-    },
-
     render: function() {
       var contactName;
 
@@ -111,7 +112,7 @@ loop.conversationViews = (function(mozL10n) {
           this.props.contact.name[0]) {
         contactName = this.props.contact.name[0];
       } else {
-        contactName = this._getPreferredEmail(this.props.contact).value;
+        contactName = _getPreferredEmail(this.props.contact).value;
       }
 
       document.title = contactName;
@@ -187,8 +188,39 @@ loop.conversationViews = (function(mozL10n) {
    * Call failed view. Displayed when a call fails.
    */
   var CallFailedView = React.createClass({displayName: 'CallFailedView',
+    mixins: [Backbone.Events],
+
     propTypes: {
-      dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired
+      dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
+      store: React.PropTypes.instanceOf(
+        loop.store.ConversationStore).isRequired,
+      contact: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+      return {
+        emailLinkButtonDisabled: false,
+        emailLink: null
+      };
+    },
+
+    componentDidMount: function() {
+      this.listenTo(this.props.store, "change:emailLink",
+                    this._onEmailLinkReceived);
+    },
+
+    componentWillUnmount: function() {
+      this.stopListening(this.props.store);
+    },
+
+    _onEmailLinkReceived: function() {
+      var emailLink = this.props.store.get("emailLink");
+      var contactEmail = _getPreferredEmail(this.props.contact).value;
+      sharedUtils.composeCallUrlEmail(emailLink, contactEmail);
+      this.setState({
+        emailLink: emailLink,
+        emailLinkButtonDisabled: false
+      });
     },
 
     retryCall: function() {
@@ -197,6 +229,12 @@ loop.conversationViews = (function(mozL10n) {
 
     cancelCall: function() {
       this.props.dispatcher.dispatch(new sharedActions.CancelCall());
+    },
+
+    emailLink: function() {
+      this.setState({emailLinkButtonDisabled: true});
+
+      this.props.dispatcher.dispatch(new sharedActions.FetchEmailLink());
     },
 
     render: function() {
@@ -208,15 +246,21 @@ loop.conversationViews = (function(mozL10n) {
 
           React.DOM.div({className: "btn-group call-action-group"}, 
             React.DOM.div({className: "fx-embedded-call-button-spacer"}), 
-              React.DOM.button({className: "btn btn-accept btn-retry", 
-                      onClick: this.retryCall}, 
-                mozL10n.get("retry_call_button")
-              ), 
+            React.DOM.button({className: "btn btn-cancel", 
+                    onClick: this.cancelCall}, 
+              mozL10n.get("cancel_button")
+            ), 
             React.DOM.div({className: "fx-embedded-call-button-spacer"}), 
-              React.DOM.button({className: "btn btn-cancel", 
-                      onClick: this.cancelCall}, 
-                mozL10n.get("cancel_button")
-              ), 
+            React.DOM.button({className: "btn btn-accept btn-retry", 
+                    onClick: this.retryCall}, 
+              mozL10n.get("retry_call_button")
+            ), 
+            React.DOM.div({className: "fx-embedded-call-button-spacer"}), 
+            React.DOM.button({className: "btn btn-email", 
+                    onClick: this.emailLink, 
+                    disabled: this.state.emailLinkButtonDisabled}, 
+              mozL10n.get("share_button2")
+            ), 
             React.DOM.div({className: "fx-embedded-call-button-spacer"})
           )
         )
@@ -425,7 +469,9 @@ loop.conversationViews = (function(mozL10n) {
         }
         case CALL_STATES.TERMINATED: {
           return (CallFailedView({
-            dispatcher: this.props.dispatcher}
+            dispatcher: this.props.dispatcher, 
+            store: this.props.store, 
+            contact: this.state.contact}
           ));
         }
         case CALL_STATES.ONGOING: {
@@ -445,7 +491,7 @@ loop.conversationViews = (function(mozL10n) {
             callState: this.state.callState, 
             contact: this.state.contact, 
             enableCancelButton: this._isCancellable()}
-          ))
+          ));
         }
       }
     },
