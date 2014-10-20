@@ -53,6 +53,9 @@ loop.roomViews = (function(mozL10n) {
           this.state.localRoomId,
           "RoomCreationError", this.onCreationError);
       }
+      // XXX move into EmptyRoomView componentDidMount
+      this.props.dispatcher.dispatch(
+        new sharedActions.SetupEmptyRoom({localRoomId: this.props.roomId}));
     },
 
     /**

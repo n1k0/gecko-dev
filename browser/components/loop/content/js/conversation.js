@@ -483,61 +483,70 @@ loop.conversation = (function(mozL10n) {
   });
 
   /**
-   * Master controller view for handling if incoming or outgoing calls are
-   * in progress, and hence, which view to display.
+   * App router.
    */
-  var AppControllerView = React.createClass({displayName: 'AppControllerView',
-    propTypes: {
-      // XXX Old types required for incoming call view.
-      client: React.PropTypes.instanceOf(loop.Client).isRequired,
-      conversation: React.PropTypes.instanceOf(sharedModels.ConversationModel)
-                         .isRequired,
-      sdk: React.PropTypes.object.isRequired,
-
-      // XXX New types for OutgoingConversationView
-      store: React.PropTypes.instanceOf(loop.store.ConversationStore).isRequired,
-      dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
-
-      // if not passed, this is not a room view
-      localRoomStore: React.PropTypes.instanceOf(loop.store.LocalRoomStore)
+  var ConversationRouter = Backbone.Router.extend({
+    routes: {
+      "incoming/:callId": "incoming",
+      "outgoing/:callId": "ougoing",
+      "rooms/:roomId": "rooms"
     },
 
-    getInitialState: function() {
-      return this.props.store.attributes;
+    initialize: function(options) {
+      options = options || {};
+      this.client = options.client || new loop.Client();
+      this.dispatcher = options.dispatcher || new loop.Dispatcher();
     },
 
-    componentWillMount: function() {
-      this.props.store.on("change:outgoing", function() {
-        this.setState(this.props.store.attributes);
-      }, this);
+    mount: function(component) {
+      var node = document.querySelector('#main');
+      React.unmountComponentAtNode(node);
+      React.renderComponent(component, node);
     },
 
-    render: function() {
-      if (this.props.localRoomStore) {
-        return (
-          EmptyRoomView({
-            mozLoop: navigator.mozLoop, 
-            localRoomStore: this.props.localRoomStore}
-          )
-        );
-      }
+    _getConversationStore: function() {
+      var sdkDriver = new loop.OTSdkDriver({
+        dispatcher: this.dispatcher,
+        sdk: OT
+      });
+      return new loop.store.ConversationStore({}, {
+        client: this.client,
+        dispatcher: this.dispatcher,
+        sdkDriver: sdkDriver
+      });
+    },
 
-      // Don't display anything, until we know what type of call we are.
-      if (this.state.outgoing === undefined) {
-        return null;
-      }
+    incoming: function(callId) {
+      // XXX should move to using conversationStore.
+      var conversation = new sharedModels.ConversationModel(
+        {callId: callId}, // Model attributes
+        {sdk: OT}         // Model dependencies
+      );
+      this.mount(IncomingConversationView({
+        client: this.client, 
+        conversation: conversation, 
+        sdk: OT}
+      ));
+    },
 
-      if (this.state.outgoing) {
-        return (OutgoingConversationView({
-          store: this.props.store, 
-          dispatcher: this.props.dispatcher}
-        ));
-      }
+    ougoing: function(callId) {
+      this.mount(OutgoingConversationView({
+        store: this._getConversationStore(), 
+        dispatcher: this.dispatcher, 
+        callId: callId}
+      ));
+    },
 
-      return (IncomingConversationView({
-        client: this.props.client, 
-        conversation: this.props.conversation, 
-        sdk: this.props.sdk}
+    rooms: function(roomId) {
+      var localRoomStore = new loop.store.LocalRoomStore({
+        dispatcher: this.dispatcher,
+        mozLoop: navigator.mozLoop
+      });
+      this.mount(EmptyRoomView({
+        mozLoop: navigator.mozLoop, 
+        dispatcher: this.dispatcher, 
+        localRoomStore: localRoomStore, 
+        roomId: roomId}
       ));
     }
   });
@@ -562,58 +571,6 @@ loop.conversation = (function(mozL10n) {
       }
     });
 
-    var dispatcher = new loop.Dispatcher();
-    var client = new loop.Client();
-    var sdkDriver = new loop.OTSdkDriver({
-      dispatcher: dispatcher,
-      sdk: OT
-    });
-
-    var conversationStore = new loop.store.ConversationStore({}, {
-      client: client,
-      dispatcher: dispatcher,
-      sdkDriver: sdkDriver
-    });
-
-    // XXX Old class creation for the incoming conversation view, whilst
-    // we transition across (bug 1072323).
-    var conversation = new sharedModels.ConversationModel(
-      {},                // Model attributes
-      {sdk: window.OT}   // Model dependencies
-    );
-
-    // Obtain the callId and pass it through
-    var helper = new loop.shared.utils.Helper();
-    var locationHash = helper.locationData().hash;
-    var callId;
-    var outgoing;
-    var localRoomStore;
-
-    // XXX removeMe, along with noisy comment at the beginning of
-    // conversation_test.js "when locationHash begins with #room".
-    if (navigator.mozLoop.getLoopBoolPref("test.alwaysUseRooms")) {
-      locationHash = "#room/32";
-    }
-
-    var hash = locationHash.match(/#incoming\/(.*)/);
-    if (hash) {
-      callId = hash[1];
-      outgoing = false;
-    } else if (hash = locationHash.match(/#room\/(.*)/)) {
-      localRoomStore = new loop.store.LocalRoomStore({
-        dispatcher: dispatcher,
-        mozLoop: navigator.mozLoop
-      });
-    } else {
-      hash = locationHash.match(/#outgoing\/(.*)/);
-      if (hash) {
-        callId = hash[1];
-        outgoing = true;
-      }
-    }
-
-    conversation.set({callId: callId});
-
     window.addEventListener("unload", function(event) {
       // Handle direct close of dialog box via [x] control.
       navigator.mozLoop.releaseCallData(callId);
@@ -621,29 +578,12 @@ loop.conversation = (function(mozL10n) {
 
     document.body.classList.add(loop.shared.utils.getTargetPlatform());
 
-    React.renderComponent(AppControllerView({
-      localRoomStore: localRoomStore, 
-      store: conversationStore, 
-      client: client, 
-      conversation: conversation, 
-      dispatcher: dispatcher, 
-      sdk: window.OT}
-    ), document.querySelector('#main'));
-
-   if (localRoomStore) {
-      dispatcher.dispatch(
-        new sharedActions.SetupEmptyRoom({localRoomId: hash[1]}));
-      return;
-    }
-
-    dispatcher.dispatch(new loop.shared.actions.GatherCallData({
-      callId: callId,
-      outgoing: outgoing
-    }));
+    new ConversationRouter();
+    Backbone.history.start();
   }
 
   return {
-    AppControllerView: AppControllerView,
+    ConversationRouter: ConversationRouter,
     IncomingConversationView: IncomingConversationView,
     IncomingCallView: IncomingCallView,
     init: init

@@ -94,6 +94,8 @@ loop.shared.utils = (function(mozL10n) {
     /**
      * Helper to allow getting some of the location data in a way that's compatible
      * with stubbing for unit tests.
+     *
+     * XXX to be removed - bug 1081023
      */
     locationData: function() {
       return {
@@ -102,6 +104,10 @@ loop.shared.utils = (function(mozL10n) {
       };
     }
   };
+
+  function extractTokenFromLoopUrl(location) {
+
+  }
 
   /**
    * Generates and opens a mailto: url with call URL information prefilled.

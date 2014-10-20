@@ -436,6 +436,13 @@ loop.conversationViews = (function(mozL10n) {
       }, this);
     },
 
+    componentDidMount: function() {
+      this.props.dispatcher.dispatch(new loop.shared.actions.GatherCallData({
+        callId: this.props.callId,
+        outgoing: true
+      }));
+    },
+
     _closeWindow: function() {
       window.close();
     },

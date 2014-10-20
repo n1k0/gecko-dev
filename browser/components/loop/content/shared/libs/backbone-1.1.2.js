@@ -253,7 +253,12 @@
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
     attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
-    this.set(attrs, options);
+    try {
+      this.set(attrs, options);
+    } catch (e) {
+      console.log('mode error', this, attributes, options);
+      throw e;
+    }
     this.changed = {};
     this.initialize.apply(this, arguments);
   };

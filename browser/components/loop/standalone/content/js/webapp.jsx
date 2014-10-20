@@ -887,6 +887,32 @@ loop.webapp = (function($, _, OT, mozL10n) {
   });
 
   /**
+   * Extracts a loop token from a document location object.
+   *
+   * XXX We might want to reconsider using a simple router here.
+   *
+   * @param  {Location} location The document location object.
+   * @return {String|undefined}  The loop token.
+   */
+  function extractTokenFromLocation(location) {
+    var match;
+
+    // locationHash supports the old format urls.
+    if (location.hash) {
+      match = location.hash.match(/\#call\/(.*)/);
+    } else if (location.pathname) {
+      // Otherwise, we're expecting a url such as /c/<token> for calls.
+      match = location.pathname.match(/\/c\/([\w\-]+)/);
+    }
+    // XXX Supporting '/\/([\w\-]+)/' is for rooms which are to be implemented
+    // in bug 1074701.
+
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  /**
    * App initialization.
    */
   function init() {
@@ -895,7 +921,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
       baseServerUrl: loop.config.serverUrl
     });
     var notifications = new sharedModels.NotificationCollection();
-    var conversation
+    var conversation;
     if (helper.isFirefoxOS(navigator.userAgent)) {
       conversation = new FxOSConversationModel();
     } else {
@@ -912,22 +938,9 @@ loop.webapp = (function($, _, OT, mozL10n) {
       });
 
     // Obtain the loopToken
-
-    var match;
-
-    // locationHash supports the old format urls.
-    var locationData = helper.locationData();
-    if (locationData.hash) {
-      match = locationData.hash.match(/\#call\/(.*)/);
-    } else if (locationData.pathname) {
-      // Otherwise, we're expecting a url such as /c/<token> for calls.
-      match = locationData.pathname.match(/\/c\/([\w\-]+)/);
-    }
-    // XXX Supporting '/\/([\w\-]+)/' is for rooms which are to be implemented
-    // in bug 1074701.
-
-    if (match && match[1]) {
-      conversation.set({loopToken: match[1]});
+    var loopToken = extractTokenFromLocation(document.location);
+    if (loopToken) {
+      conversation.set({loopToken: loopToken});
     }
 
     React.renderComponent(<WebappRootView
@@ -955,6 +968,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
     HomeView: HomeView,
     UnsupportedBrowserView: UnsupportedBrowserView,
     UnsupportedDeviceView: UnsupportedDeviceView,
+    extractTokenFromLocation: extractTokenFromLocation,
     init: init,
     PromoteFirefoxView: PromoteFirefoxView,
     WebappRootView: WebappRootView,
