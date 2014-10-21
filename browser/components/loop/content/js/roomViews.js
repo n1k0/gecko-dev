@@ -53,9 +53,18 @@ loop.roomViews = (function(mozL10n) {
           this.state.localRoomId,
           "RoomCreationError", this.onCreationError);
       }
-      // XXX move into EmptyRoomView componentDidMount
-      this.props.dispatcher.dispatch(
-        new sharedActions.SetupEmptyRoom({localRoomId: this.props.roomId}));
+    },
+
+    componentWillUnmount: function() {
+      this.stopListening(this.props.localRoomStore);
+
+      // XXXremoveMe (just the conditional itself) in patch 2 for bug 1074686,
+      // once the addCallback stuff lands
+      if (this.props.mozLoop.rooms && this.props.mozLoop.rooms.removeCallback) {
+        this.props.mozLoop.rooms.removeCallback(
+          this.state.localRoomId,
+          "RoomCreationError", this.onCreationError);
+      }
     },
 
     /**
@@ -78,18 +87,6 @@ loop.roomViews = (function(mozL10n) {
      */
     _onLocalRoomStoreChanged: function() {
       this.setState(this.props.localRoomStore.getStoreState());
-    },
-
-    componentWillUnmount: function() {
-      this.stopListening(this.props.localRoomStore);
-
-      // XXXremoveMe (just the conditional itself) in patch 2 for bug 1074686,
-      // once the addCallback stuff lands
-      if (this.props.mozLoop.rooms && this.props.mozLoop.rooms.removeCallback) {
-        this.props.mozLoop.rooms.removeCallback(
-          this.state.localRoomId,
-          "RoomCreationError", this.onCreationError);
-      }
     },
 
     render: function() {

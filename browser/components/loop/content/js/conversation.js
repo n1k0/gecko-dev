@@ -485,7 +485,7 @@ loop.conversation = (function(mozL10n) {
   /**
    * App router.
    */
-  var ConversationRouter = Backbone.Router.extend({
+  var ConversationWindowRouter = Backbone.Router.extend({
     routes: {
       "incoming/:callId": "incoming",
       "outgoing/:callId": "ougoing",
@@ -498,10 +498,10 @@ loop.conversation = (function(mozL10n) {
       this.dispatcher = options.dispatcher || new loop.Dispatcher();
     },
 
-    mount: function(component) {
+    mount: function(component, callback) {
       var node = document.querySelector('#main');
       React.unmountComponentAtNode(node);
-      React.renderComponent(component, node);
+      React.renderComponent(component, node, callback);
     },
 
     _getConversationStore: function() {
@@ -519,8 +519,8 @@ loop.conversation = (function(mozL10n) {
     incoming: function(callId) {
       // XXX should move to using conversationStore.
       var conversation = new sharedModels.ConversationModel(
-        {callId: callId}, // Model attributes
-        {sdk: OT}         // Model dependencies
+        {callId: callId},   // Model attributes
+        {sdk:    window.OT} // Model dependencies
       );
       this.mount(IncomingConversationView({
         client: this.client, 
@@ -529,7 +529,7 @@ loop.conversation = (function(mozL10n) {
       ));
     },
 
-    ougoing: function(callId) {
+    outgoing: function(callId) {
       this.mount(OutgoingConversationView({
         store: this._getConversationStore(), 
         dispatcher: this.dispatcher, 
@@ -578,12 +578,12 @@ loop.conversation = (function(mozL10n) {
 
     document.body.classList.add(loop.shared.utils.getTargetPlatform());
 
-    new ConversationRouter();
+    new ConversationWindowRouter();
     Backbone.history.start();
   }
 
   return {
-    ConversationRouter: ConversationRouter,
+    ConversationWindowRouter: ConversationWindowRouter,
     IncomingConversationView: IncomingConversationView,
     IncomingCallView: IncomingCallView,
     init: init

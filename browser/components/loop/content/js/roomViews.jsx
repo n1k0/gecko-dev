@@ -55,6 +55,18 @@ loop.roomViews = (function(mozL10n) {
       }
     },
 
+    componentWillUnmount: function() {
+      this.stopListening(this.props.localRoomStore);
+
+      // XXXremoveMe (just the conditional itself) in patch 2 for bug 1074686,
+      // once the addCallback stuff lands
+      if (this.props.mozLoop.rooms && this.props.mozLoop.rooms.removeCallback) {
+        this.props.mozLoop.rooms.removeCallback(
+          this.state.localRoomId,
+          "RoomCreationError", this.onCreationError);
+      }
+    },
+
     /**
      * Attached to the "RoomCreationError" with mozLoop.rooms.addCallback,
      * which is fired mozLoop.rooms.createRoom from the panel encounters an
@@ -75,18 +87,6 @@ loop.roomViews = (function(mozL10n) {
      */
     _onLocalRoomStoreChanged: function() {
       this.setState(this.props.localRoomStore.getStoreState());
-    },
-
-    componentWillUnmount: function() {
-      this.stopListening(this.props.localRoomStore);
-
-      // XXXremoveMe (just the conditional itself) in patch 2 for bug 1074686,
-      // once the addCallback stuff lands
-      if (this.props.mozLoop.rooms && this.props.mozLoop.rooms.removeCallback) {
-        this.props.mozLoop.rooms.removeCallback(
-          this.state.localRoomId,
-          "RoomCreationError", this.onCreationError);
-      }
     },
 
     render: function() {

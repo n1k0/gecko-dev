@@ -4,10 +4,12 @@ describe("loop.roomViews", function () {
   "use strict";
 
   var store, fakeWindow, sandbox, fakeAddCallback, fakeMozLoop,
-    fakeRemoveCallback, fakeRoomId, fakeWindow;
+    fakeRemoveCallback, fakeRoomId, dispatcher;
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
+
+    dispatcher = new loop.Dispatcher();
 
     fakeRoomId = "fakeRoomId";
     fakeAddCallback =
@@ -21,7 +23,7 @@ describe("loop.roomViews", function () {
     loop.roomViews.setRootObject(fakeWindow);
 
     store = new loop.store.LocalRoomStore({
-      dispatcher: { register: function() {} },
+      dispatcher: dispatcher,
       mozLoop: fakeMozLoop
     });
     store.setStoreState({localRoomId: fakeRoomId});
@@ -37,7 +39,8 @@ describe("loop.roomViews", function () {
       return TestUtils.renderIntoDocument(
         new loop.roomViews.EmptyRoomView({
           mozLoop: fakeMozLoop,
-          localRoomStore: store
+          localRoomStore: store,
+          dispatcher: dispatcher
         }));
     }
 

@@ -421,6 +421,7 @@ loop.conversationViews = (function(mozL10n) {
    */
   var OutgoingConversationView = React.createClass({
     propTypes: {
+      callId: React.PropTypes.number.isRequired,
       dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
       store: React.PropTypes.instanceOf(
         loop.store.ConversationStore).isRequired

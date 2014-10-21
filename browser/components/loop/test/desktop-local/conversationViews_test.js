@@ -407,7 +407,8 @@ describe("loop.conversationViews", function () {
       return TestUtils.renderIntoDocument(
         loop.conversationViews.OutgoingConversationView({
           dispatcher: dispatcher,
-          store: store
+          store: store,
+          callId: "42"
         }));
     }
 
@@ -426,6 +427,22 @@ describe("loop.conversationViews", function () {
 
     afterEach(function() {
       delete navigator.mozLoop;
+    });
+
+    it("should trigger a gatherCallData action on mount", function() {
+      store.set({
+        callState: CALL_STATES.INIT,
+        contact: contact
+      });
+
+      mountTestComponent();
+
+      sinon.assert.calledOnce(dispatcher.dispatch);
+      sinon.assert.calledWithExactly(dispatcher.dispatch,
+        new loop.shared.actions.GatherCallData({
+          callId: "42",
+          outgoing: true
+        }));
     });
 
     it("should render the CallFailedView when the call state is 'terminated'",

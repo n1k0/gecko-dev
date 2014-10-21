@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* global loop, sinon, React, TestUtils */
+/* jshint newcap:false */
 
 var expect = chai.expect;
 
@@ -73,6 +74,8 @@ describe("loop.conversation", function() {
       sandbox.stub(React, "renderComponent");
       sandbox.stub(document.mozL10n, "initialize");
 
+      sandbox.stub(Backbone.history, "start");
+
       sandbox.stub(loop.shared.models.ConversationModel.prototype,
         "initialize");
 
@@ -101,18 +104,35 @@ describe("loop.conversation", function() {
         navigator.mozLoop);
     });
 
-    it("should create the AppControllerView", function() {
+    it("should create the ConversationWindowRouter", function() {
+      var routerInitialize = sandbox.stub(
+        loop.conversation.ConversationWindowRouter.prototype, "initialize");
+
       loop.conversation.init();
 
-      sinon.assert.calledOnce(React.renderComponent);
-      sinon.assert.calledWith(React.renderComponent,
-        sinon.match(function(value) {
-          return TestUtils.isDescriptorOfType(value,
-            loop.conversation.AppControllerView);
-      }));
+      sinon.assert.calledOnce(routerInitialize);
     });
 
-    describe("when locationHash begins with #room", function () {
+    // Move to router tests
+    it.skip("should trigger an outgoing gatherCallData action for outgoing calls",
+      function() {
+        loop.shared.utils.Helper.prototype.locationData.returns({
+          hash: "#outgoing/24",
+          pathname: "/"
+        });
+
+        loop.conversation.init();
+
+        sinon.assert.calledOnce(loop.Dispatcher.prototype.dispatch);
+        sinon.assert.calledWithExactly(loop.Dispatcher.prototype.dispatch,
+          new loop.shared.actions.GatherCallData({
+            callId: "24",
+            outgoing: true
+          }));
+      });
+
+    // Move to router tests
+    describe.skip("when locationHash begins with #room", function () {
       // XXX must stay in sync with "test.alwaysUseRooms" pref check
       // in conversation.jsx:init until we remove that code, which should
       // happen in the second patch in bug 1074686, at which time this comment
@@ -151,37 +171,95 @@ describe("loop.conversation", function() {
             new loop.shared.actions.SetupEmptyRoom({localRoomId: fakeRoomID}));
         });
     });
-
-    it("should trigger a gatherCallData action", function() {
-      loop.conversation.init();
-
-      sinon.assert.calledOnce(loop.Dispatcher.prototype.dispatch);
-      sinon.assert.calledWithExactly(loop.Dispatcher.prototype.dispatch,
-        new loop.shared.actions.GatherCallData({
-          callId: "42",
-          outgoing: false
-        }));
-    });
-
-    it("should trigger an outgoing gatherCallData action for outgoing calls",
-      function() {
-        loop.shared.utils.Helper.prototype.locationData.returns({
-          hash: "#outgoing/24",
-          pathname: "/"
-        });
-
-        loop.conversation.init();
-
-        sinon.assert.calledOnce(loop.Dispatcher.prototype.dispatch);
-        sinon.assert.calledWithExactly(loop.Dispatcher.prototype.dispatch,
-          new loop.shared.actions.GatherCallData({
-            callId: "24",
-            outgoing: true
-          }));
-      });
   });
 
-  describe("ConversationControllerView", function() {
+  describe("ConversationWindowRouter", function() {
+    var router;
+
+    beforeEach(function() {
+      window.OT = {};
+      router = new loop.conversation.ConversationWindowRouter();
+    });
+
+    afterEach(function() {
+      delete window.OT;
+    });
+
+    describe("#mount", function() {
+      beforeEach(function() {
+        sandbox.stub(React, "renderComponent");
+        sandbox.stub(React, "unmountComponentAtNode");
+      });
+
+      var TestComp = React.createClass({
+        render: function() {
+          return React.DOM.div();
+        }
+      });
+
+      it("should mount a react component", function() {
+        var comp = TestComp();
+        router.mount(comp);
+
+        sinon.assert.calledOnce(React.renderComponent);
+        sinon.assert.calledWith(React.renderComponent, comp);
+      });
+
+      it("should unmount any previously mounted component", function() {
+        router.mount(TestComp());
+
+        sinon.assert.calledOnce(React.unmountComponentAtNode);
+      });
+    });
+
+    describe("#incoming", function() {
+      it("should mount an IncomingConversationView component", function() {
+        sandbox.stub(router, "mount");
+
+        router.incoming("42");
+
+        sinon.assert.calledOnce(router.mount);
+        sinon.assert.calledWithMatch(router.mount,
+          sinon.match(function(value) {
+            return TestUtils.isDescriptorOfType(value,
+              loop.conversation.IncomingConversationView);
+          }));
+      });
+    });
+
+    describe("#ougoing", function() {
+      it("should mount a OutgoingConversationView component", function() {
+        sandbox.stub(router, "mount");
+
+        router.outgoing("42");
+
+        sinon.assert.calledOnce(router.mount);
+        sinon.assert.calledWithMatch(router.mount,
+          sinon.match(function(value) {
+            return TestUtils.isDescriptorOfType(value,
+              loop.conversationViews.OutgoingConversationView);
+          }));
+      });
+    });
+
+    describe("#rooms", function() {
+      it("should mount a EmptyRoomView component", function() {
+        sandbox.stub(router, "mount");
+
+        router.rooms("42");
+
+        sinon.assert.calledOnce(router.mount);
+        sinon.assert.calledWithMatch(router.mount,
+          sinon.match(function(value) {
+            return TestUtils.isDescriptorOfType(value,
+              loop.roomViews.EmptyRoomView);
+          }));
+      });
+    });
+  });
+
+  // Move to router tests
+  describe.skip("AppControllerView", function() {
     var store, conversation, client, ccView, oldTitle, dispatcher;
 
     function mountTestComponent(localRoomStore) {
