@@ -5,6 +5,7 @@ var expect = chai.expect;
 
 describe("loop.store.Room", function () {
   "use strict";
+
   describe("#constructor", function() {
     it("should validate room values", function() {
       expect(function() {

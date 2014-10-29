@@ -625,7 +625,7 @@ describe("loop.panel", function() {
           cb("fake error");
         };
         sandbox.stub(notifications, "errorL10n");
-        var view = TestUtils.renderIntoDocument(loop.panel.CallUrlResult({
+        TestUtils.renderIntoDocument(loop.panel.CallUrlResult({
           notifications: notifications,
           client: fakeClient
         }));
@@ -638,9 +638,10 @@ describe("loop.panel", function() {
   });
 
   describe("loop.panel.RoomList", function() {
-    var roomListStore, dispatcher;
+    var roomListStore, dispatcher, fakeEmail;
 
     beforeEach(function() {
+      fakeEmail = "fakeEmail@example.com";
       dispatcher = new loop.Dispatcher();
       roomListStore = new loop.store.RoomListStore({
         dispatcher: dispatcher,
@@ -651,7 +652,8 @@ describe("loop.panel", function() {
     function createTestComponent() {
       return TestUtils.renderIntoDocument(loop.panel.RoomList({
         store: roomListStore,
-        dispatcher: dispatcher
+        dispatcher: dispatcher,
+        displayName: fakeEmail
       }));
     }
 
@@ -662,6 +664,32 @@ describe("loop.panel", function() {
 
       sinon.assert.calledOnce(dispatch);
       sinon.assert.calledWithExactly(dispatch, new sharedActions.GetAllRooms());
+    });
+
+    it("should dispatch a CreateRoom action when clicking on the Start a " +
+       "conversation button",
+      function() {
+        navigator.mozLoop.userProfile = {email: fakeEmail};
+        var dispatch = sandbox.stub(dispatcher, "dispatch");
+        var view = createTestComponent();
+
+        TestUtils.Simulate.click(view.getDOMNode().querySelector("button"));
+
+        sinon.assert.calledWith(dispatch, new sharedActions.CreateRoom({
+          nameTemplate: "fakeText",
+          roomOwner: fakeEmail
+        }));
+      });
+
+    it("should disable the new room button when the pending state is true",
+      function(done) {
+        var dispatch = sandbox.stub(dispatcher, "dispatch");
+        roomListStore.setStoreState({error: null, pending: true, rooms: []});
+
+        var view = createTestComponent();
+
+        var buttonNode = view.getDOMNode().querySelector("button[disabled]");
+        expect(buttonNode).to.not.equal(null);
     });
   });
 

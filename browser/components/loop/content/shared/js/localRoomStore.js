@@ -98,11 +98,12 @@ loop.store.LocalRoomStore = (function() {
      */
     setupEmptyRoom: function(actionData) {
       this._fetchRoomData(actionData, function(error, roomData) {
-        this.setStoreState({
+        var storeData = {
           error: error,
           localRoomId: actionData.localRoomId,
           serverData: roomData
-        });
+        };
+        this.setStoreState(storeData);
       }.bind(this));
     }
 

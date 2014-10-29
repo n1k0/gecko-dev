@@ -517,20 +517,19 @@ loop.panel = (function(_, mozL10n) {
     propTypes: {
       store: React.PropTypes.instanceOf(loop.store.RoomListStore).isRequired,
       dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
-      rooms: React.PropTypes.array
+      displayName: React.PropTypes.string.isRequired  // for room creation
     },
 
     getInitialState: function() {
-      var storeState = this.props.store.getStoreState();
-      return {
-        error: this.props.error || storeState.error,
-        rooms: this.props.rooms || storeState.rooms,
-      };
+      return this.props.store.getStoreState();
     },
 
-    componentWillMount: function() {
-      this.listenTo(this.props.store, "change", this._onRoomListChanged);
+    componentDidMount: function() {
+      this.listenTo(this.props.store, "change", this._onStoreStateChanged);
 
+      // XXX this should no longer be necessary once have a better mechanism
+      // for updating the list (possibly as part of the content side of bug
+      // 1074665.
       this.props.dispatcher.dispatch(new sharedActions.GetAllRooms());
     },
 
@@ -538,7 +537,7 @@ loop.panel = (function(_, mozL10n) {
       this.stopListening(this.props.store);
     },
 
-    _onRoomListChanged: function() {
+    _onStoreStateChanged: function() {
       this.setState(this.props.store.getStoreState());
     },
 
@@ -550,6 +549,13 @@ loop.panel = (function(_, mozL10n) {
       return mozL10n.get("rooms_list_current_conversations", {num: numRooms});
     },
 
+    handleCreateButtonClick: function() {
+      this.props.dispatcher.dispatch(new sharedActions.CreateRoom({
+        nameTemplate: mozL10n.get("rooms_default_room_name_template"),
+        roomOwner: this.props.displayName
+      }));
+    },
+
     openRoom: function(room) {
       // XXX implement me; see bug 1074678
     },
@@ -557,17 +563,24 @@ loop.panel = (function(_, mozL10n) {
     render: function() {
       if (this.state.error) {
         // XXX Better end user reporting of errors.
-        console.error(this.state.error);
+        console.error("RoomList error", this.state.error);
       }
 
       return (
-        React.DOM.div({className: "room-list"}, 
-          React.DOM.h1(null, this._getListHeading()), 
-          
-            this.state.rooms.map(function(room, i) {
-              return RoomEntry({key: i, room: room, openRoom: this.openRoom});
-            }, this)
-          
+        React.DOM.div({className: "rooms"}, 
+          React.DOM.div({className: "room-list"}, 
+            React.DOM.h1(null, this._getListHeading()), 
+            
+              this.state.rooms.map(function(room, i) {
+                return RoomEntry({key: i, room: room, openRoom: this.openRoom});
+              }, this)
+            
+          ), 
+          React.DOM.button({className: "btn btn-info", 
+                  onClick: this.handleCreateButtonClick, 
+                  disabled: this.state.pendingCreation}, 
+            mozL10n.get("rooms_new_room_button_label")
+          )
         )
       );
     }
@@ -638,15 +651,19 @@ loop.panel = (function(_, mozL10n) {
     /**
      * The rooms feature is hidden by default for now. Once it gets mainstream,
      * this method can be safely removed.
+     *
+     * @param {String} displayName - default friendly name of current user
+     *                               for possible use when creating a new room
      */
-    _renderRoomsTab: function() {
+    _renderRoomsTab: function(displayName) {
       if (!navigator.mozLoop.getLoopBoolPref("rooms.enabled")) {
         return null;
       }
       return (
         Tab({name: "rooms"}, 
           RoomList({dispatcher: this.props.dispatcher, 
-                    store: this.props.roomListStore})
+                    store: this.props.roomListStore, 
+                    displayName: displayName})
         )
       );
     },
@@ -690,7 +707,7 @@ loop.panel = (function(_, mozL10n) {
                 ToSView(null)
               )
             ), 
-            this._renderRoomsTab(), 
+            this._renderRoomsTab(displayName), 
             Tab({name: "contacts"}, 
               ContactsList({selectTab: this.selectTab, 
                             startForm: this.startForm})

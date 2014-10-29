@@ -139,7 +139,7 @@ body {
 }
 
 /* Rooms */
-.room-list {
+.room {
   background: #f5f5f5;
 }
 
@@ -200,6 +200,14 @@ body {
 .room-list > .room-entry > p > a:hover {
   opacity: 1;
   text-decoration: underline;
+}
+
+.rooms .btn {
+  display: block;
+  font-size: 1rem;
+  margin: 0 auto 1rem auto;
+  padding: .5rem 1rem;
+  border-radius: 3px;
 }
 
 /* Buttons */
