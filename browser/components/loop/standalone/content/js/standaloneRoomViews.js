@@ -25,7 +25,7 @@ loop.standaloneRoomViews = (function(mozL10n) {
     _renderCallToActionLink: function() {
       if (this.props.helper.isFirefox(navigator.userAgent)) {
         return (
-          React.DOM.a({href: loop.config.learnMoreUrl, className: "btn btn-info"}, 
+          React.DOM.a({href: loop.config.learnMoreUrl, className: "btn btn-info"},
             mozL10n.get("rooms_room_full_call_to_action_label", {
               clientShortname: mozL10n.get("clientShortname2")
             })
@@ -33,7 +33,7 @@ loop.standaloneRoomViews = (function(mozL10n) {
         );
       }
       return (
-        React.DOM.a({href: loop.config.brandWebsiteUrl, className: "btn btn-info"}, 
+        React.DOM.a({href: loop.config.brandWebsiteUrl, className: "btn btn-info"},
           mozL10n.get("rooms_room_full_call_to_action_nonFx_label", {
             brandShortname: mozL10n.get("brandShortname")
           })
@@ -60,8 +60,8 @@ loop.standaloneRoomViews = (function(mozL10n) {
         case ROOM_STATES.INIT:
         case ROOM_STATES.READY: {
           return (
-            React.DOM.button({className: "btn btn-join btn-info", 
-                    onClick: this.props.joinRoom}, 
+            React.DOM.button({className: "btn btn-join btn-info",
+                    onClick: this.props.joinRoom},
               mozL10n.get("rooms_room_join_label")
             )
           );
@@ -69,23 +69,23 @@ loop.standaloneRoomViews = (function(mozL10n) {
         case ROOM_STATES.JOINED:
         case ROOM_STATES.SESSION_CONNECTED: {
           return (
-            React.DOM.p({className: "empty-room-message"}, 
+            React.DOM.p({className: "empty-room-message"},
               mozL10n.get("rooms_only_occupant_label")
             )
           );
         }
         case ROOM_STATES.FULL:
           return (
-            React.DOM.div(null, 
-              React.DOM.p({className: "full-room-message"}, 
+            React.DOM.div(null,
+              React.DOM.p({className: "full-room-message"},
                 mozL10n.get("rooms_room_full_label")
-              ), 
+              ),
               React.DOM.p(null, this._renderCallToActionLink())
             )
           );
         case ROOM_STATES.FAILED:
           return (
-            React.DOM.p({className: "failed-room-message"}, 
+            React.DOM.p({className: "failed-room-message"},
               this._getFailureString()
             )
           );
@@ -96,7 +96,7 @@ loop.standaloneRoomViews = (function(mozL10n) {
 
     render: function() {
       return (
-        React.DOM.div({className: "room-inner-info-area"}, 
+        React.DOM.div({className: "room-inner-info-area"},
           this._renderContent()
         )
       );
@@ -106,7 +106,7 @@ loop.standaloneRoomViews = (function(mozL10n) {
   var StandaloneRoomHeader = React.createClass({displayName: 'StandaloneRoomHeader',
     render: function() {
       return (
-        React.DOM.header(null, 
+        React.DOM.header(null,
           React.DOM.h1(null, mozL10n.get("clientShortname2"))
         )
       );
@@ -118,12 +118,12 @@ loop.standaloneRoomViews = (function(mozL10n) {
       return mozL10n.get("legal_text_and_links", {
         "clientShortname": mozL10n.get("clientShortname2"),
         "terms_of_use_url": React.renderComponentToStaticMarkup(
-          React.DOM.a({href: loop.config.legalWebsiteUrl, target: "_blank"}, 
+          React.DOM.a({href: loop.config.legalWebsiteUrl, target: "_blank"},
             mozL10n.get("terms_of_use_link_text")
           )
         ),
         "privacy_notice_url": React.renderComponentToStaticMarkup(
-          React.DOM.a({href: loop.config.privacyWebsiteUrl, target: "_blank"}, 
+          React.DOM.a({href: loop.config.privacyWebsiteUrl, target: "_blank"},
             mozL10n.get("privacy_notice_link_text")
           )
         ),
@@ -132,8 +132,8 @@ loop.standaloneRoomViews = (function(mozL10n) {
 
     render: function() {
       return (
-        React.DOM.footer(null, 
-          React.DOM.p({dangerouslySetInnerHTML: {__html: this._getContent()}}), 
+        React.DOM.footer(null,
+          React.DOM.p({dangerouslySetInnerHTML: {__html: this._getContent()}}),
           React.DOM.div({className: "footer-logo"})
         )
       );
@@ -270,32 +270,32 @@ loop.standaloneRoomViews = (function(mozL10n) {
       });
 
       return (
-        React.DOM.div({className: "room-conversation-wrapper"}, 
-          StandaloneRoomHeader(null), 
-          StandaloneRoomInfoArea({roomState: this.state.roomState, 
-                                  failureReason: this.state.failureReason, 
-                                  joinRoom: this.joinRoom, 
-                                  helper: this.props.helper}), 
-          React.DOM.div({className: "video-layout-wrapper"}, 
-            React.DOM.div({className: "conversation room-conversation"}, 
-              React.DOM.h2({className: "room-name"}, this.state.roomName), 
-              React.DOM.div({className: "media nested"}, 
-                React.DOM.div({className: "video_wrapper remote_wrapper"}, 
+        React.DOM.div({className: "room-conversation-wrapper"},
+          StandaloneRoomHeader(null),
+          StandaloneRoomInfoArea({roomState: this.state.roomState,
+                                  failureReason: this.state.failureReason,
+                                  joinRoom: this.joinRoom,
+                                  helper: this.props.helper}),
+          React.DOM.div({className: "video-layout-wrapper"},
+            React.DOM.div({className: "conversation room-conversation"},
+              React.DOM.h2({className: "room-name"}, this.state.roomName),
+              React.DOM.div({className: "media nested"},
+                React.DOM.div({className: "video_wrapper remote_wrapper"},
                   React.DOM.div({className: "video_inner remote"})
-                ), 
+                ),
                 React.DOM.div({className: localStreamClasses})
-              ), 
+              ),
               sharedViews.ConversationToolbar({
                 video: {enabled: !this.state.videoMuted,
-                        visible: this._roomIsActive()}, 
+                        visible: this._roomIsActive()},
                 audio: {enabled: !this.state.audioMuted,
-                        visible: this._roomIsActive()}, 
-                publishStream: this.publishStream, 
-                hangup: this.leaveRoom, 
-                hangupButtonLabel: mozL10n.get("rooms_leave_button_label"), 
+                        visible: this._roomIsActive()},
+                publishStream: this.publishStream,
+                hangup: this.leaveRoom,
+                hangupButtonLabel: mozL10n.get("rooms_leave_button_label"),
                 enableHangup: this._roomIsActive()})
             )
-          ), 
+          ),
           StandaloneRoomFooter(null)
         )
       );

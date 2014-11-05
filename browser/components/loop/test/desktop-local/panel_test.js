@@ -155,8 +155,7 @@ describe("loop.panel", function() {
       };
 
       dispatcher = new loop.Dispatcher();
-      roomStore = new loop.store.RoomStore({
-        dispatcher: dispatcher,
+      roomStore = new loop.store.RoomStore(dispatcher, {
         mozLoop: navigator.mozLoop
       });
     });
@@ -756,8 +755,7 @@ describe("loop.panel", function() {
     beforeEach(function() {
       fakeEmail = "fakeEmail@example.com";
       dispatcher = new loop.Dispatcher();
-      roomStore = new loop.store.RoomStore({
-        dispatcher: dispatcher,
+      roomStore = new loop.store.RoomStore(dispatcher, {
         mozLoop: navigator.mozLoop
       });
       roomStore.setStoreState({
