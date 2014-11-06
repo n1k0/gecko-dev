@@ -45,12 +45,12 @@ describe("loop.roomViews", function () {
     loop.shared.mixins.setRootObject(window);
   });
 
-  describe("DesktopRoomView", function() {
+  describe("DesktopRoomControllerView", function() {
     var view;
 
     function mountTestComponent() {
       return TestUtils.renderIntoDocument(
-        new loop.roomViews.DesktopRoomView({
+        new loop.roomViews.DesktopRoomControllerView({
           mozLoop: {},
           roomStore: roomStore
         }));
