@@ -325,6 +325,34 @@ loop.shared.actions = (function() {
      * Used to indicate the user wishes to leave the room.
      */
     LeaveRoom: Action.define("leaveRoom", {
+    }),
+
+    /**
+     * Reports feedback user mood.
+     */
+    SetFeedbackMood: Action.define("setFeedbackMood", {
+      happy: Boolean
+    }),
+
+    /**
+     * Sets feedback details.
+     */
+    SetFeedbackDetails: Action.define("setFeedbackDetails", {
+      category: String,
+      description: String
+    }),
+
+    /**
+     * Send feedback data.
+     */
+    SendFeedback: Action.define("sendFeedback", {
+    }),
+
+    /**
+     * Reacts on feedback submission error.
+     */
+    SendFeedbackError: Action.define("sendFeedbackError", {
+      error: Error
     })
   };
 })();
